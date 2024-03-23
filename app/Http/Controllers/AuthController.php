@@ -14,7 +14,8 @@ class AuthController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             'email' => 'required|string|email|max:100|unique:users',
-            'password' => 'required|string|min:8'
+            'password' => 'required|string|min:8',
+            'role' => 'required' //Falta validar que acepte un enum de 2 opciones o con un IF, checar validation rules de laravel
         ];
         $validator = Validator::make($request->input(),$rules);
         if ($validator->fails()){
@@ -31,6 +32,17 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password)
         ]);
+        switch ($request->role) {
+            case 'Client':
+                $user->assignRole('Client');
+                break;
+            case 'Visitor':
+                $user->assignRole('Visitor');
+                break;
+            default:
+                $user->assignRole('Visitor');
+                break;
+        }
         $token = $user->createToken('API_TOKEN')->plainTextToken;
         return response()->json(
             [

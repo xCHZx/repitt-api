@@ -27,16 +27,18 @@ Route::prefix('auth')->group(function () {
 Route::middleware(['auth:sanctum'])->group(function () {
     //Auth
     Route::prefix('auth')->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+        Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
+    });
+
+    Route::prefix('business')->group(function () {
+        Route::get('/', [BusinessController::class, 'getAll'])->name('business.getAll');
+        Route::get('/{hashedId}', [BusinessController::class, 'getById'])->name('business.getById');
+        Route::get('/user/{id}', [BusinessController::class, 'getAllByUser'])->name('business.getAllByUser');
+        // Route::post('/', [BusinessController::class, 'store'])->name('business.store')->middleware('can:business.store');
+        Route::put('/{hashedId}', [BusinessController::class, 'update'])->name('business.update');
+        Route::delete('/{hashedId}', [BusinessController::class, 'delete'])->name('business.delete');
     });
 
 });
 
-Route::prefix('business')->group(function () {
-    Route::get('/', [BusinessController::class, 'getAll'])->name('business.getAll');
-    Route::get('/{hashedId}', [BusinessController::class, 'getById'])->name('business.getById');
-    Route::get('/user/{id}', [BusinessController::class, 'getAllByUser'])->name('business.getAllByUser');
-    Route::post('/', [BusinessController::class, 'store'])->name('business.store');
-    Route::put('/{hashedId}', [BusinessController::class, 'update'])->name('business.update');
-    Route::delete('/{hashedId}', [BusinessController::class, 'delete'])->name('business.delete');
-});
+

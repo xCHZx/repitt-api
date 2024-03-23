@@ -19,7 +19,7 @@ class BusinessController extends Controller
     }
 
     public function store(Request $request){
-        return ('store');
+        return ($request);
     }
 
     public function update(Request $request){
