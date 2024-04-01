@@ -7,14 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     public function register(Request $request){
         $rules = [
-            'name' => 'required|string|max:100',
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'phone' => 'required|string|max:20|unique:users',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:8',
+            'account_status' => 'required',
             'role' => 'required' //Falta validar que acepte un enum de 2 opciones o con un IF, checar validation rules de laravel
         ];
         $validator = Validator::make($request->input(),$rules);
@@ -27,14 +31,28 @@ class AuthController extends Controller
                 ,400
                 );
         }
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password)
-        ]);
+        // $user = User::create([
+        //     'name' => $request->name,
+        //     'email' => $request->email,
+        //     'password' => Hash::make($request->password)
+        // ]);
+        $user = new User();
+        $user->first_name = $request->first_name;
+        $user->last_name = $request->last_name;
+        $user->phone = $request->phone;
+        $user->email = $request->email;
+        $user->account_status_id = $request->account_status;
+        $user->password = Hash::make($request->password);
+        $repittCode = $this->generateRepittCode();
+
+        while (User::where('repitt_code', $repittCode)->exists()) {
+            $repittCode = $this->generateRepittCode();
+        }
+        $user->repitt_code = $repittCode;
+
         switch ($request->role) {
-            case 'Client':
-                $user->assignRole('Client');
+            case 'Owner':
+                $user->assignRole('Owner');
                 break;
             case 'Visitor':
                 $user->assignRole('Visitor');
@@ -43,7 +61,10 @@ class AuthController extends Controller
                 $user->assignRole('Visitor');
                 break;
         }
+        $user->save();
         $token = $user->createToken('API_TOKEN')->plainTextToken;
+
+
         return response()->json(
             [
                 'status' => 'success',
@@ -105,6 +126,17 @@ class AuthController extends Controller
                 'message' => 'User logout successful',
             ],200
         );
+    }
+
+    private function generateRepittCode(){
+        $alphabet = 'abcdefghijklmnopqrstuvwxyz';
+        $randomIndex = rand(0, strlen($alphabet) - 1);
+        $randomCharacter = $alphabet[$randomIndex];
+
+        $repittCode = Str::random(9);
+        $repittCode = strtolower(preg_replace('/[^a-zA-Z]/', $randomCharacter, $repittCode));
+        $repittCode = implode('-', str_split($repittCode, 3));
+        return $repittCode;
     }
 
 }

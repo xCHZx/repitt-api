@@ -15,14 +15,14 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        $roleClient = Role::create(['name' => 'Client']);
+        $roleOwner = Role::create(['name' => 'Owner']);
         $roleVisitor = Role::create(['name' => 'Visitor']);
 
-        Permission::create(['name' => 'client.test'])->syncRoles([$roleClient, $roleVisitor]);
+        Permission::create(['name' => 'owner.test'])->syncRoles([$roleOwner, $roleVisitor]);
         Permission::create(['name' => 'visitor.test'])->syncRoles([$roleVisitor]);
 
-        Permission::create(['name' => 'auth.logout'])->syncRoles([$roleVisitor, $roleClient]);
+        Permission::create(['name' => 'auth.logout'])->syncRoles([$roleVisitor, $roleOwner]);
 
-        // Permission::create(['name' => 'business.store'])->syncRoles([$roleClient]);
+        Permission::create(['name' => 'business.store'])->syncRoles([$roleOwner]);
     }
 }

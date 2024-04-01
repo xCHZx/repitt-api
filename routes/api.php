@@ -20,7 +20,6 @@ Route::prefix('user')->group(function () {
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-
 });
 
 //Private URLs
@@ -30,13 +29,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
     });
 
+    //Business
     Route::prefix('business')->group(function () {
-        Route::get('/', [BusinessController::class, 'getAll'])->name('business.getAll');
-        Route::get('/{hashedId}', [BusinessController::class, 'getById'])->name('business.getById');
-        Route::get('/user/{id}', [BusinessController::class, 'getAllByUser'])->name('business.getAllByUser');
-        // Route::post('/', [BusinessController::class, 'store'])->name('business.store')->middleware('can:business.store');
-        Route::put('/{hashedId}', [BusinessController::class, 'update'])->name('business.update');
-        Route::delete('/{hashedId}', [BusinessController::class, 'delete'])->name('business.delete');
+        Route::post('/', [BusinessController::class, 'store'])->name('business.store')->middleware('can:business.store');
+        // Route::get('/', [BusinessController::class, 'getAll'])->name('business.getAll'); //Admin route
+        Route::get('/{id}', [BusinessController::class, 'getById'])->name('business.getById');
+        Route::get('/user/current', [BusinessController::class, 'getAllByCurrentUser'])->name('business.getAllByCurrentUser');
+        // Route::put('/{id}', [BusinessController::class, 'update'])->name('business.update'); //Admin route
+        Route::put('/user/current/{id}', [BusinessController::class, 'updateByCurrentUser'])->name('business.updateByCurrentUser');
+        // Route::delete('/{id}', [BusinessController::class, 'delete'])->name('business.delete'); //Admin route (falta)
     });
 
 });
