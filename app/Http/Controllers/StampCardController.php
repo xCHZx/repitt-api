@@ -18,7 +18,7 @@ class StampCardController extends Controller
             // 'stamp_icon_path' => 'required|string',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
-            // 'reward_id' => 'required|integer',
+            'reward' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -39,7 +39,7 @@ class StampCardController extends Controller
             $stampCard->stamp_icon_path = $request->stamp_icon_path;
             $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
-            $stampCard->reward_id = $request->reward_id;
+            $stampCard->reward = $request->reward;
             $stampCard->save();
 
             return response()->json(
@@ -116,11 +116,6 @@ class StampCardController extends Controller
 
     }
 
-    // public function updateByCurrentUser(Request $request, $id)
-    // {
-
-
-    // }
 
     public function delete(Request $request, $id)
     {

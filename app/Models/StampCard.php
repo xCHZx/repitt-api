@@ -22,7 +22,7 @@ class StampCard extends Model
         'stamp_icon_path',
         'primary_color',
         'business_id',
-        'reward_id',
+        'reward',
     ];
 
     public function visits(): MorphMany

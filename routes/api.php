@@ -52,6 +52,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/business/{id}', [VisitController::class, 'getByBusiness'])->name('visit.getByBusiness');
     });
 
+    // Route::prefix('reward')->group(function () {
+    //     Route::post('/', [RewardController::class, 'store'])->name('reward.store');
+    //     Route::get('/user/current', [RewardController::class, 'getAllByCurrentUser'])->name('reward.getAllByCurrentUser');
+    //     Route::get('/stampcard/{id}', [RewardController::class, 'getByStampCard'])->name('reward.getByStampCard');
+    //     Route::get('/business/{id}', [RewardController::class, 'getByBusiness'])->name('reward.getByBusiness');
+    // });
+
 });
 
 
