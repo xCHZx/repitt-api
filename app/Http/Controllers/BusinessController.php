@@ -77,6 +77,7 @@ class BusinessController extends Controller
     public function store(Request $request){
         $rules = [
             'name' => 'required|string|max:100',
+            'segment' => 'required|string|max:100',
         ];
         $validator = Validator::make($request->input(),$rules);
         if ($validator->fails()){
@@ -93,6 +94,8 @@ class BusinessController extends Controller
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
+            $business->phone = $request->phone;
+            $business->segment = $request->segment;
             $business->save();
             $business->users()->attach(auth()->id());
             return response()->json(

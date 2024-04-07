@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\StampCard;
 use App\Models\User;
 use App\Models\Visit;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -30,20 +31,50 @@ class VisitController extends Controller
         }
 
         try{
-            $stampCard = StampCard::find($request->stamp_card_id);
             $user = User::find($request->user_id);
-            $visit = new Visit();
-            $visit->user()->associate($user);
-            $stampCard->visits()->save($visit);
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'data' => [
-                        $visit
-                    ]
-                ], 201
-            );
 
+            //get the user's visits for the stamp card
+            $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
+            $stampCard = StampCard::find($request->stamp_card_id);
+
+            if (!$visits or $visits->isEmpty()){
+
+                $user = User::find($request->user_id);
+                $visit = new Visit();
+                $visit->user()->associate($user);
+                $stampCard->visits()->save($visit);
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'data' => [
+                            $visit
+                        ]
+                    ], 201
+                );
+            }else{
+                if ($this->isPast12Hours($visits)){
+
+                    $user = User::find($request->user_id);
+                    $visit = new Visit();
+                    $visit->user()->associate($user);
+                    $stampCard->visits()->save($visit);
+                    return response()->json(
+                        [
+                            'status' => 'success',
+                            'data' => [
+                                $visit
+                            ]
+                        ], 201
+                    );
+                }else{
+                    return response()->json(
+                        [
+                            'status' => 'error',
+                            'message' => 'You can only visit once every 12 hours',
+                        ], 400
+                    );
+                }
+            }
 
         }catch(Exception $e){
             return $e;
@@ -116,11 +147,17 @@ class VisitController extends Controller
         }
     }
 
-//     public function getById($id)
-//     {
+    private function isPast12Hours($visits){
+        $now = Carbon::now();
+        $lastVisit = $visits->last();
+        $diffMins = $now->diffInMinutes($lastVisit->created_at);
+        $diffHours = $diffMins / 60;
 
+        $diffHours = abs($diffHours);
 
-//         $visit = Visit::find(1);
-//         $user = $visit->user;
-//     }
+        if ($diffHours >= 12 ){
+            return true;
+        }
+        return false;
+    }
 }

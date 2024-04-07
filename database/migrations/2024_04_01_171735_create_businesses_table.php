@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('description')->nullable();
             $table->string('address')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('segment');
+            $table->string('opening_hours')->nullable();
             $table->string('hashed_id')->nullable();
             $table->string('logo_path')->nullable();
             $table->string('qr_path')->nullable();

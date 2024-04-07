@@ -15,6 +15,8 @@ class StampCardController extends Controller
             'name' => 'required|string',
             // 'description' => 'required|string',
             'required_stamps' => 'required|integer',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date',
             // 'stamp_icon_path' => 'required|string',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
@@ -36,6 +38,8 @@ class StampCardController extends Controller
             $stampCard->name = $request->name;
             $stampCard->description = $request->description;
             $stampCard->required_stamps = $request->required_stamps;
+            $stampCard->start_date = $request->start_date;
+            $stampCard->end_date = $request->end_date;
             $stampCard->stamp_icon_path = $request->stamp_icon_path;
             $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;

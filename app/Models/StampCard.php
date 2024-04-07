@@ -19,6 +19,8 @@ class StampCard extends Model
         'name',
         'description',
         'required_stamps',
+        'start_date',
+        'end_date',
         'stamp_icon_path',
         'primary_color',
         'business_id',
