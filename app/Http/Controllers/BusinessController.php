@@ -11,22 +11,6 @@ use Illuminate\Support\Str;
 
 class BusinessController extends Controller
 {
-    public function getAll(){
-        try{
-            $businesses = Business::all();
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'data' => [
-                        $businesses
-                    ]
-                ],200
-            );
-
-        }catch(Exception $e){
-            return $e;
-        }
-    }
 
     public function getById($id){
         try{
@@ -166,6 +150,38 @@ class BusinessController extends Controller
                 ],200
             );
         }catch(Exception $e){
+            return $e;
+        }
+    }
+
+    public function getVisitedByCurrentUser(){
+        try{
+            $res = auth()->user()->businesses()->whereHas('stamp_cards', function($query){
+                $query->whereHas('visits', function($query){
+                    $query->where('user_id', auth()->id());
+                });
+            })->get();
+
+
+            if (! $res or $res->isEmpty()){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $res
+                    ]
+                ],200
+            );
+
+        }catch
+        (Exception $e){
             return $e;
         }
     }

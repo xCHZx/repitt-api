@@ -65,11 +65,25 @@ class StampCardController extends Controller
         try{
             $userId = auth()->user()->id;
 
-            $stampCards = StampCard::whereHas('business', function($query) use ($userId){
-                $query->whereHas('users', function($query) use ($userId){
-                    $query->where('user_id', $userId);
-                });
-            })->get();
+            // $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
+            //     $query->where('user_id', $userId);
+            // })->with('business')->get();
+
+            // $stampCards = $stampCards->map(function($stampCard) use ($userId) {
+            //     $stampCard->load(['visits' => function($query) use ($userId) {
+            //         $query->where('user_id', $userId);
+            //     }]);
+            //     return $stampCard;
+            // });
+
+            $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
+                $query->where('user_id', $userId);
+            })->with(['business' => function($query) {
+                $query->select('id', 'name', 'segment');
+            }])->withCount(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->get();
+
 
             if (! $stampCards or $stampCards->isEmpty()){
                 return response()->json(
