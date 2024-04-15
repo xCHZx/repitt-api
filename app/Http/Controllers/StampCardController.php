@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\StampCard;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class StampCardController extends Controller
@@ -15,7 +16,7 @@ class StampCardController extends Controller
             'name' => 'required|string',
             // 'description' => 'required|string',
             'required_stamps' => 'required|integer',
-            // 'stamp_icon_path' => 'required|string',
+            'stamp_icon_string' => 'required|base64_image_size:500',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
             // 'reward_id' => 'required|integer',
@@ -36,17 +37,20 @@ class StampCardController extends Controller
             $stampCard->name = $request->name;
             $stampCard->description = $request->description;
             $stampCard->required_stamps = $request->required_stamps;
-            $stampCard->stamp_icon_path = $request->stamp_icon_path;
+            //$stampCard->stamp_icon_path = $request->stamp_icon_path;
             $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
             $stampCard->reward_id = $request->reward_id;
             $stampCard->save();
 
+            $stam_icon_path = $this->saveIcon($request->stamp_icon_string, $stampCard->id);
+
             return response()->json(
                 [
                     'status' => 'success',
                     'data' => [
-                        $stampCard
+                        $stampCard,
+                        'stamp_icon_path' => $stam_icon_path
                     ]
                 ], 201
             );
@@ -124,6 +128,40 @@ class StampCardController extends Controller
 
     public function delete(Request $request, $id)
     {
+
+    }
+
+    private function generateIcon($stamp_icon_string,$id)
+    {
+        // Obtengo los bins de la imagen decodificando el string
+        $bin = base64_decode($stamp_icon_string);
+
+        // convierto los bin en un Gdimage
+        $im = imageCreateFromString($bin);
+ 
+        // me aseguro de si tener la imagen 
+        if (!$im) {
+            throw new Exception("Error Processing Request", 1);
+            
+        }
+        //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
+        ob_start();
+        imagepng($im);
+        $imagebuffer = ob_get_clean();
+        Storage::disk('public')->put('business/images/icons/'.$id.'.png',$imagebuffer);
+
+        // libero la memoria
+        imagedestroy($im);
+
+    }
+
+    private function saveIcon($stamp_icon_string,$id)
+    {
+        $this->generateIcon($stamp_icon_string,$id);
+        $stampCard = StampCard::find($id);
+        $stampCard->stamp_icon_path = asset('storage/business/images/icons/'.$id.'.png');
+        $stampCard->save();
+        return $stampCard->stamp_icon_path;
 
     }
 }
