@@ -36,32 +36,7 @@ class AuthController extends Controller
         //     'email' => $request->email,
         //     'password' => Hash::make($request->password)
         // ]);
-        $user = new User();
-        $user->first_name = $request->first_name;
-        $user->last_name = $request->last_name;
-        $user->phone = $request->phone;
-        $user->email = $request->email;
-        $user->account_status_id = $request->account_status;
-        $user->password = Hash::make($request->password);
-        $repittCode = $this->generateRepittCode();
-
-        while (User::where('repitt_code', $repittCode)->exists()) {
-            $repittCode = $this->generateRepittCode();
-        }
-        $user->repitt_code = $repittCode;
-
-        switch ($request->role) {
-            case 'Owner':
-                $user->assignRole('Owner');
-                break;
-            case 'Visitor':
-                $user->assignRole('Visitor');
-                break;
-            default:
-                $user->assignRole('Visitor');
-                break;
-        }
-        $user->save();
+        $user = app(UserController::class)->store($request);
         $token = $user->createToken('API_TOKEN')->plainTextToken;
 
 
@@ -128,15 +103,5 @@ class AuthController extends Controller
         );
     }
 
-    private function generateRepittCode(){
-        $alphabet = 'abcdefghijklmnopqrstuvwxyz';
-        $randomIndex = rand(0, strlen($alphabet) - 1);
-        $randomCharacter = $alphabet[$randomIndex];
-
-        $repittCode = Str::random(9);
-        $repittCode = strtolower(preg_replace('/[^a-zA-Z]/', $randomCharacter, $repittCode));
-        $repittCode = implode('-', str_split($repittCode, 3));
-        return $repittCode;
-    }
 
 }
