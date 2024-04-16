@@ -60,7 +60,7 @@ class StampCardController extends Controller
 
     }
 
-    public function getAllByCurrentUser(Request $request)
+    public function getAllByCurrentVisitor()
     {
         try{
             $userId = auth()->user()->id;
@@ -107,6 +107,43 @@ class StampCardController extends Controller
         }
     }
 
+    public function getByIdByCurrentVisitor($stampCardId){
+        try{
+            $userId = auth()->user()->id;
+            $stampCard = StampCard::whereHas('visits', function($query) use ($userId){
+                $query->where('user_id', $userId);
+            })->with(['business' => function($query) {
+                $query->select('id', 'name', 'segment');
+            }])->with(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->withCount(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->find($stampCardId);
+
+            if (! $stampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCard
+                    ]
+                ],200
+            );
+
+        }catch(Exception $e){
+            return $e;
+        }
+    }
+
+
+
     public function getById(Request $request, $id)
     {
         try{
@@ -132,6 +169,26 @@ class StampCardController extends Controller
             return $e;
         }
 
+    }
+
+    public function getAllByCurrentCompany(){
+        try{
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $stampCards = StampCard::whereIn('business_id', $businessesIds)->with(['business' => function($query) {
+                $query->select('id', 'name');
+            }])->get();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCards
+                    ]
+                ],200
+            );
+        }
+        catch(Exception $e){
+            return $e;
+        }
     }
 
 

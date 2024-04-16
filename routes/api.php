@@ -36,8 +36,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::prefix('stampcard')->group(function () {
         Route::post('/', [StampCardController::class, 'store'])->name('stampcard.store'); //Falta validar por negocio
-        Route::get('/user/current', [StampCardController::class, 'getAllByCurrentUser'])->name('stampcard.getAllByCurrentUser');
+        Route::get('/visitor/current', [StampCardController::class, 'getAllByCurrentVisitor'])->name('stampcard.getAllByCurrentVisitor');
+        Route::get('/company/current', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
         Route::get('/{id}', [StampCardController::class, 'getById'])->name('stampcard.getById');
+        Route::get('{id}/visitor/current', [StampCardController::class, 'getByIdByCurrentVisitor'])->name('stampcard.getByIdByCurrentVisitor');
+
     });
 
     Route::prefix('visit')->group(function () {

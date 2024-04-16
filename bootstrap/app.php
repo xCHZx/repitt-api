@@ -21,7 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
         $middleware->validateCsrfTokens(except: [
             'stripe/*',
-            'http://127.0.0.1:5173'
+            'http://127.0.0.1:5173',
+            'http://localhost:5173',
+            'api/*'
         ]);
     })
     ->create();
