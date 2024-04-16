@@ -16,10 +16,12 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->integer('required_stamps');
+            $table->date('start_date');
+            $table->date('end_date');
             $table->string('stamp_icon_path')->nullable();
             $table->string('primary_color')->nullable();
             $table->unsignedBigInteger('business_id');
-            $table->unsignedBigInteger('reward_id')->nullable();
+            $table->string('reward');
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
             $table->softDeletes();
