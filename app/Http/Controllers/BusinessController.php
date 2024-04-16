@@ -12,9 +12,8 @@ use Illuminate\Support\Str;
 
 class BusinessController extends Controller
 {
-    public function getAll()
-    {
-        try {
+    public function getAll(){
+        try{
             $businesses = Business::all();
             return response()->json(
                 [
@@ -22,19 +21,17 @@ class BusinessController extends Controller
                     'data' => [
                         $businesses
                     ]
-                ],
-                200
+                ],200
             );
 
-        } catch (Exception $e) {
+        }catch(Exception $e){
             return $e;
         }
     }
 
-    public function getById($id)
-    {
-        try {
-            if (!$business = Business::find($id)) {
+    public function getById($id){
+        try{
+            if (! $business = Business::find($id)){
                 return response()->json(
                     [
                         'status' => 'error',
@@ -112,7 +109,7 @@ class BusinessController extends Controller
             $business->segment = $request->segment;
             $business->save();
             $logo_path = $this->saveLogo($request->logo_string, $business->id);
-            $business->users()->attach(auth()->id()); 
+            $business->users()->attach(auth()->id());
             return response()->json(
                 [
                     'status' => 'success',
@@ -193,6 +190,38 @@ class BusinessController extends Controller
         }
     }
 
+    public function getVisitedByCurrentUser(){
+        try{
+            $res = auth()->user()->businesses()->whereHas('stamp_cards', function($query){
+                $query->whereHas('visits', function($query){
+                    $query->where('user_id', auth()->id());
+                });
+            })->get();
+
+
+            if (! $res or $res->isEmpty()){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $res
+                    ]
+                ],200
+            );
+
+        }catch
+        (Exception $e){
+            return $e;
+        }
+    }
+
     public function delete(Request $request)
     {
         return ('delete');
@@ -205,11 +234,11 @@ class BusinessController extends Controller
 
         // convierto los bin en un Gdimage
         $im = imageCreateFromString($bin);
- 
-        // me aseguro de si tener la imagen 
+
+        // me aseguro de si tener la imagen
         if (!$im) {
             throw new Exception("Error Processing Request", 1);
-            
+
         }
         //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
         ob_start();
@@ -230,6 +259,6 @@ class BusinessController extends Controller
         $business->save();
 
         return $business->logo_path;
-        
+
     }
 }

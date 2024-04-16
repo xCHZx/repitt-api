@@ -66,16 +66,30 @@ class StampCardController extends Controller
 
     }
 
-    public function getAllByCurrentUser(Request $request)
+    public function getAllByCurrentVisitor()
     {
         try{
             $userId = auth()->user()->id;
 
-            $stampCards = StampCard::whereHas('business', function($query) use ($userId){
-                $query->whereHas('users', function($query) use ($userId){
-                    $query->where('user_id', $userId);
-                });
-            })->get();
+            // $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
+            //     $query->where('user_id', $userId);
+            // })->with('business')->get();
+
+            // $stampCards = $stampCards->map(function($stampCard) use ($userId) {
+            //     $stampCard->load(['visits' => function($query) use ($userId) {
+            //         $query->where('user_id', $userId);
+            //     }]);
+            //     return $stampCard;
+            // });
+
+            $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
+                $query->where('user_id', $userId);
+            })->with(['business' => function($query) {
+                $query->select('id', 'name', 'segment');
+            }])->withCount(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->get();
+
 
             if (! $stampCards or $stampCards->isEmpty()){
                 return response()->json(
@@ -98,6 +112,43 @@ class StampCardController extends Controller
             return $e;
         }
     }
+
+    public function getByIdByCurrentVisitor($stampCardId){
+        try{
+            $userId = auth()->user()->id;
+            $stampCard = StampCard::whereHas('visits', function($query) use ($userId){
+                $query->where('user_id', $userId);
+            })->with(['business' => function($query) {
+                $query->select('id', 'name', 'segment');
+            }])->with(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->withCount(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])->find($stampCardId);
+
+            if (! $stampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCard
+                    ]
+                ],200
+            );
+
+        }catch(Exception $e){
+            return $e;
+        }
+    }
+
+
 
     public function getById(Request $request, $id)
     {
@@ -124,6 +175,26 @@ class StampCardController extends Controller
             return $e;
         }
 
+    }
+
+    public function getAllByCurrentCompany(){
+        try{
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $stampCards = StampCard::whereIn('business_id', $businessesIds)->with(['business' => function($query) {
+                $query->select('id', 'name');
+            }])->get();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCards
+                    ]
+                ],200
+            );
+        }
+        catch(Exception $e){
+            return $e;
+        }
     }
 
 
