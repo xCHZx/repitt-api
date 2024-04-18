@@ -84,7 +84,7 @@ class BusinessController extends Controller
     {
         $rules = [
             'name' => 'required|string|max:100',
-            'logo_string' => 'required|base64_image_size:500',
+            //'logo_string' => 'required|base64_image_size:500',
             'segment' => 'required|string|max:100',
         ];
         $validator = Validator::make($request->input(), $rules);
@@ -108,15 +108,26 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->segment = $request->segment;
             $business->save();
-            $logo_path = $this->saveLogo($request->logo_string, $business->id);
+            if(!$request->logo_string)
+            {
+                $logo_path = asset('storage/business/images/logo/placeholder.png');
+            }
+            else
+            {
+                $this->generateLogo($request->logo_string,$business->id);
+                $logo_path = asset('storage/business/images/logo/'.$business->id.'.png');
+
+            }
+            $business->update(['logo_path' => $logo_path]);
+            $business = $business->refresh();
+
             $business->users()->attach(auth()->id());
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'Business creation successful',
                     'data' => [
-                        $business,
-                        'logo_path' => $logo_path
+                        $business
                     ]
                 ],
                 200
@@ -143,6 +154,12 @@ class BusinessController extends Controller
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
+
+            if($request->logo_string)
+            {
+                $this->generateLogo($request->logo_string,$id);
+                $business->logo_path = asset('storage/business/images/logo/'.$id.'.png');
+            }
             $business->save();
             return response()->json(
                 [
@@ -174,6 +191,11 @@ class BusinessController extends Controller
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
+            if($request->logo_string)
+            {
+                $this->generateLogo($request->logo_string,$id);
+                $business->logo_path = asset('storage/business/images/logo/'.$id.'.png');
+            }
             $business->save();
             return response()->json(
                 [
@@ -232,12 +254,21 @@ class BusinessController extends Controller
         // Obtengo los bins de la imagen decodificando el string
         $bin = base64_decode($logo_string);
 
+        // obtengo el tamaño de la imagen en kilobytes
+        $imageSize = strlen($bin) / 1024;
+
+        // Checo si la imagen es mayor a el tamaño maximo
+        if($imageSize > 500)
+        {
+            throw new Exception("La imagen es mayor a 500 kb", 1);
+        }
+
         // convierto los bin en un Gdimage
         $im = imageCreateFromString($bin);
 
         // me aseguro de si tener la imagen
         if (!$im) {
-            throw new Exception("Error Processing Request", 1);
+            throw new Exception("Este recurso no es una imagen o hubo un problema con la imagen", 1);
 
         }
         //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
@@ -248,17 +279,6 @@ class BusinessController extends Controller
 
         // libero la memoria
         imagedestroy($im);
-
-    }
-
-    private function saveLogo($logo_string, $id)
-    {
-        $this->generateLogo($logo_string,$id);
-        $business = Business::find($id);
-        $business->logo_path = asset('storage/business/images/logo/'.$id.'.png');
-        $business->save();
-
-        return $business->logo_path;
 
     }
 }

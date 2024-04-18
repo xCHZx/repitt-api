@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('account_status_id');
             $table->string('qr_path')->nullable();
+            $table->boolean('has_verified_email')->default(0);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

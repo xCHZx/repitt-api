@@ -14,9 +14,9 @@ class StampCardController extends Controller
     {
         $rules = [
             'name' => 'required|string',
-            // 'description' => 'required|string',
+            'description' => 'required|string',
             'required_stamps' => 'required|integer',
-            'stamp_icon_string' => 'required|base64_image_size:500',
+            //'stamp_icon_string' => 'required|base64_image_size:500',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
             // 'stamp_icon_path' => 'required|string',
@@ -48,15 +48,24 @@ class StampCardController extends Controller
             $stampCard->business_id = $request->business_id;
             $stampCard->reward = $request->reward;
             $stampCard->save();
-
-            $stam_icon_path = $this->saveIcon($request->stamp_icon_string, $stampCard->id);
+            if(!$request->stamp_icon_string)
+            {
+                $stamp_icon_path = asset('storage/business/images/icons/placeholder.png'); 
+            }
+            else
+            {
+                $this->generateIcon($request->stamp_icon_string,$stampCard->id);
+                $stamp_icon_path = asset('storage/business/images/icons/'.$stampCard->id.'.png');
+                
+            }
+            $stampCard->update(['stamp_icon_path' => $stamp_icon_path]);
+            $stampCard = $stampCard->refresh();
 
             return response()->json(
                 [
                     'status' => 'success',
                     'data' => [
-                        $stampCard,
-                        'stamp_icon_path' => $stam_icon_path
+                        $stampCard
                     ]
                 ], 201
             );
@@ -208,12 +217,21 @@ class StampCardController extends Controller
         // Obtengo los bins de la imagen decodificando el string
         $bin = base64_decode($stamp_icon_string);
 
+        // obtengo el tamaño de la imagen en kilobytes 
+        $imageSize = strlen($bin) / 1024;
+          
+        // Checo si la imagen es mayor a el tamaño maximo
+        if($imageSize > 500)
+         {
+             throw new Exception("La imagen es mayor a 500 kb", 1);
+        }
+
         // convierto los bin en un Gdimage
         $im = imageCreateFromString($bin);
  
         // me aseguro de si tener la imagen 
         if (!$im) {
-            throw new Exception("Error Processing Request", 1);
+            throw new Exception("Hubo un problema con la imagen o el archivo no es una imagen", 1);
             
         }
         //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
@@ -227,13 +245,4 @@ class StampCardController extends Controller
 
     }
 
-    private function saveIcon($stamp_icon_string,$id)
-    {
-        $this->generateIcon($stamp_icon_string,$id);
-        $stampCard = StampCard::find($id);
-        $stampCard->stamp_icon_path = asset('storage/business/images/icons/'.$id.'.png');
-        $stampCard->save();
-        return $stampCard->stamp_icon_path;
-
-    }
 }

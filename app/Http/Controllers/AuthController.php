@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -11,7 +12,8 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-    public function register(Request $request){
+    public function register(Request $request)
+    {
         $rules = [
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
@@ -21,15 +23,16 @@ class AuthController extends Controller
             'account_status' => 'required',
             'role' => 'required' //Falta validar que acepte un enum de 2 opciones o con un IF, checar validation rules de laravel
         ];
-        $validator = Validator::make($request->input(),$rules);
-        if ($validator->fails()){
+        $validator = Validator::make($request->input(), $rules);
+        if ($validator->fails()) {
             return response()->json(
                 [
                     'status' => 'error',
                     'errors' => $validator->errors()->all()
                 ]
-                ,400
-                );
+                ,
+                400
+            );
         }
         // $user = User::create([
         //     'name' => $request->name,
@@ -45,38 +48,42 @@ class AuthController extends Controller
                 'status' => 'success',
                 'message' => 'User creation successful',
                 'token' => $token
-            ],200
+            ],
+            200
         );
     }
 
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $rules = [
             'email' => 'required|string|email|max:100',
             'password' => 'required|string'
         ];
-        $validator = Validator::make($request->input(),$rules);
-        if ($validator->fails()){
+        $validator = Validator::make($request->input(), $rules);
+        if ($validator->fails()) {
             return response()->json(
                 [
                     'status' => 'error',
                     'errors' => $validator->errors()->all()
                 ]
-                ,400
-                );
+                ,
+                400
+            );
         }
 
-        if(!Auth::attempt($request->only('email','password'))){
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(
                 [
                     'status' => 'error',
                     'errors' => 'Wrong credentials'
                 ]
-                ,400
-                );
+                ,
+                400
+            );
         }
         auth()->user()->tokens()->delete(); //Si el login es correcto, elimina todos los tokens para crear uno nuevo (para 1 solo usuario por sesión)
 
-        $user = User::where('email',$request->email)->first();
+        $user = User::where('email', $request->email)->first();
 
         $token = $user->createToken('API_TOKEN')->plainTextToken;
         return response()->json(
@@ -88,19 +95,60 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                 ]
-            ],200
+            ],
+            200
         );
     }
 
-    public function logout(){
+    public function logout()
+    {
         auth()->user()->tokens()->delete();
         // Auth::logout();
         return response()->json(
             [
                 'status' => 'success',
                 'message' => 'User logout successful',
-            ],200
+            ],
+            200
         );
+    }
+
+
+    public function verifyEmail()
+    {
+        try {
+
+            $userId = auth()->user()->id;
+
+            $user = User::find($userId);
+
+            if (!$user->email_verified_at || !$user->has_verified_email) {
+                // ver como encriptar id pero no hashearlo 
+                // despues enviar el id hasheado al metodo que envia el correo
+                $hasedId = hash('sha512',$user->id);
+                app(EmailController::class)->sendVerifyEmail($userId, $user->email);
+            }
+            else{
+                throw new Exception("Error Processing Request", 1);
+                
+            }
+
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => 'verification email sended successfully'
+                ],200
+                );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ],401
+            );
+        }
+
+
     }
 
 
