@@ -130,7 +130,7 @@ class BusinessController extends Controller
                     'status' => 'success',
                     'message' => 'Business creation successful',
                     'data' => [
-                        $business
+                        $business,
                     ]
                 ],
                 200

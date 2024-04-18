@@ -30,6 +30,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     //Auth
     Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
+        Route::post('/sendMail',[AuthController::class,'sendVerifyEmail'])->name('mail.send');
+        Route::post('/verifyEmail',[AuthController::class,'verifyEmail'])->name('auth.verifyEmail');
     });
 
     //Business
@@ -63,5 +65,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
 });
 
 
-Route::post('/sendMail',[EmailController::class,'sendVerifyEmail'])->name('mail.send');
+
 

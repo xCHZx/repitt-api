@@ -20,6 +20,7 @@ class Business extends Model
         'name',
         'description',
         'address',
+        'logo_path'
     ];
 
     public function users(): BelongsToMany
