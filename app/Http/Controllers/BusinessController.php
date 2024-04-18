@@ -110,20 +110,19 @@ class BusinessController extends Controller
             $business->address = $request->address;
             $business->phone = $request->phone;
             $business->segment = $request->segment;
-            
+            $business->save();
             if(!$request->logo_string)
             {
-                $business->logo_path = asset('storage/business/images/logo/placeholder.png');
-                $business->save();
-                
+                $logo_path = asset('storage/business/images/logo/placeholder.png'); 
             }
-            else{
-                $business->save();
+            else
+            {
                 $this->generateLogo($request->logo_string,$business->id);
                 $logo_path = asset('storage/business/images/logo/'.$business->id.'.png');
-                Business::where('id',$business->id)
-                          ->update(['logo_path' => $logo_path]);
+                
             }
+            $business->update(['logo_path' => $logo_path]);
+            $business = $business->refresh();
            
             $business->users()->attach(auth()->id()); 
             return response()->json(
