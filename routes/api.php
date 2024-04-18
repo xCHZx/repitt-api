@@ -67,6 +67,8 @@ Route::prefix('visitor')->group(function () {
             // Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentVisitor'])->name('stampcard.getAllByCurrentVisitor');
             // Route::get('/{id}', [BusinessController::class, 'getByIdAsVisitor'])->name('business.getByIdAsVisitor');
         });
+    });
+
 
     Route::prefix('visit')->group(function () {
         Route::post('/', [VisitController::class, 'store'])->name('visit.store');
