@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\VisitController;
 use Illuminate\Http\Request;
@@ -61,4 +62,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 });
 
+
+Route::post('/sendMail',[EmailController::class,'sendVerifyEmail'])->name('mail.send');
 
