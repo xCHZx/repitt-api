@@ -80,8 +80,19 @@ class BusinessController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function storeAsCompany(Request $request)
     {
+        // Validate if the user is an owner
+        if (!auth()->user()->hasRole('Owner')) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => 'Unauthorized'
+                ],
+                    401
+                );
+            }
+
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
@@ -99,7 +110,6 @@ class BusinessController extends Controller
             );
         }
         try {
-
 
             $business = new Business();
             $business->name = $request->name;

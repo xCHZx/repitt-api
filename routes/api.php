@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\StampCardController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,20 +30,20 @@ Route::prefix('company')->group(function () {
 
         //Negocio
         Route::prefix('business')->group(function () {
-            // Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
+            Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
             // Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
             // Route::put('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
         });
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
-            // Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
+            Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
             // Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
         });
 
         //Visitas
         Route::prefix('visit')->group(function () {
-            // Route::post('/', [VisitController::class, 'storeAsCompany'])->name('visit.storeAsCompany');
+            Route::post('/', [VisitController::class, 'storeAsCompany'])->name('visit.storeAsCompany');
             // Route::get('{id}/logged-user', [StampCardController::class, 'getByIdByCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
             // Route::get('/business/{id}', [VisitController::class, 'getAllByBusinessAsCompany'])->name('visit.getAllByBusinessAsCompany');
             // Route::get('/stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCompany'])->name('visit.getAllByStampCardAsCompany');
@@ -64,25 +65,22 @@ Route::prefix('visitor')->group(function () {
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
-            // Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentVisitor'])->name('stampcard.getAllByCurrentVisitor');
-            // Route::get('/{id}', [BusinessController::class, 'getByIdAsVisitor'])->name('business.getByIdAsVisitor');
+            Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentVisitor'])->name('stampcard.getAllByCurrentVisitor');
+            Route::get('/{id}', [StampCardController::class, 'getByIdAsVisitor'])->name('business.getByIdAsVisitor');
         });
+
+        Route::prefix('visit')->group(function () {
+        // Route::post('/', [VisitController::class, 'store'])->name('visit.store');
+        // Route::get('/stampcard/{id}', [VisitController::class, 'getAllByStampCard'])->name('visit.getAllByStampCard');
+        // Route::get('/user/current', [VisitController::class, 'getAllByCurrentUser'])->name('visit.getAllByCurrentUser');
+        // Route::get('/business/{id}', [VisitController::class, 'getByBusiness'])->name('visit.getByBusiness');
+        });
+
+        Route::prefix('user')->group(function () {
+            Route::get('/logged-user', [UserController::class, 'getCurrentVisitorData'])->name('user.getCurrentVisitorData');
+        });
+
     });
-
-
-    Route::prefix('visit')->group(function () {
-        Route::post('/', [VisitController::class, 'store'])->name('visit.store');
-        Route::get('/stampcard/{id}', [VisitController::class, 'getAllByStampCard'])->name('visit.getAllByStampCard');
-        Route::get('/user/current', [VisitController::class, 'getAllByCurrentUser'])->name('visit.getAllByCurrentUser');
-        Route::get('/business/{id}', [VisitController::class, 'getByBusiness'])->name('visit.getByBusiness');
-    });
-
-    // Route::prefix('reward')->group(function () {
-    //     Route::post('/', [RewardController::class, 'store'])->name('reward.store');
-    //     Route::get('/user/current', [RewardController::class, 'getAllByCurrentUser'])->name('reward.getAllByCurrentUser');
-    //     Route::get('/stampcard/{id}', [RewardController::class, 'getByStampCard'])->name('reward.getByStampCard');
-    //     Route::get('/business/{id}', [RewardController::class, 'getByBusiness'])->name('reward.getByBusiness');
-    // });
 
 });
 
