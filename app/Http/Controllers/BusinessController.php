@@ -88,7 +88,7 @@ class BusinessController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
-            'segment' => 'required|string|max:100',
+            'segment' => 'required|integer',
         ];
         $validator = Validator::make($request->input(), $rules);
         if ($validator->fails()) {
