@@ -44,4 +44,9 @@ class Business extends Model
             'id' // Local key on stamp_cards table...
         )->where('visitable_type', StampCard::class);
     }
+
+    public function segment(): BelongsTo
+    {
+        return $this->belongsTo(Segment::class);
+    }
 }
