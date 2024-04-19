@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 require '../vendor/autoload.php';
 class EmailController extends Controller
 {
+    // mover esto a Mailers
     public function sendVerifyEmail($validationCode,$userMail,$userName)
     {
 

@@ -113,7 +113,8 @@ class BusinessController extends Controller
             $business->save();
             if(!$request->logo_string)
             {
-                $logo_path = asset('storage/business/images/logo/placeholder.png'); 
+                $logo_path = asset('storage/placeholders/logo-placeholder.png'); 
+                //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
             }
             else
             {
