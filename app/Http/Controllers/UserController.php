@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Exception;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -46,6 +47,23 @@ class UserController extends Controller
         return $user;
     }
 
+    public function getCurrentVisitorData()
+    {
+        try{
+            $user = auth()->user();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $user
+                    ]
+                ],200
+            );
+        }catch(Exception $e){
+            return $e;
+        }
+    }
+
     private function generateRepittCode(){
         $alphabet = 'abcdefghijklmnopqrstuvwxyz';
         $randomIndex = rand(0, strlen($alphabet) - 1);
@@ -63,7 +81,7 @@ class UserController extends Controller
                 ->size(200)
                 ->errorCorrection('H')
                 ->generate($repittCode);
-        
+
         Storage::disk('public')->put('business/images/qr/'.'repittcode='.$repittCode.'.png',$qrCode);
 
     }

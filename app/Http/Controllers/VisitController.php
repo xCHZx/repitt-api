@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class VisitController extends Controller
 {
-    public function store(Request $request)
+    public function storeAsCompany(Request $request)
     {
         $rules = [
             'stamp_card_id' => 'required|integer',
@@ -31,11 +31,25 @@ class VisitController extends Controller
         }
 
         try{
+
+            $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
+
             $user = User::find($request->user_id);
 
             //get the user's visits for the stamp card
             $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
+
+
             $stampCard = StampCard::find($request->stamp_card_id);
+            //Check if the stampCard business is the same as the user's business
+            if (!in_array($stampCard->business_id, $userBusinessesIds)) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'You can only visit businesses in your company'
+                    ], 400
+                );
+            }
 
             if (!$visits or $visits->isEmpty()){
 

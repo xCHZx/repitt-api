@@ -10,8 +10,19 @@ use Illuminate\Support\Facades\Validator;
 
 class StampCardController extends Controller
 {
-    public function store(Request $request)
+    public function storeAsCompany(Request $request)
     {
+        //Verificar si el usuario tiene el rol Owner
+        if (!auth()->user()->hasRole('Owner')) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => 'Unauthorized Role'
+                ],
+                    401
+                );
+            }
+
         $rules = [
             'name' => 'required|string',
             'description' => 'required|string',
@@ -50,13 +61,13 @@ class StampCardController extends Controller
             $stampCard->save();
             if(!$request->stamp_icon_string)
             {
-                $stamp_icon_path = asset('storage/placeholders/icon-placeholder.png'); 
+                $stamp_icon_path = asset('storage/placeholders/icon-placeholder.png');
             }
             else
             {
                 $this->generateIcon($request->stamp_icon_string,$stampCard->id);
                 $stamp_icon_path = asset('storage/business/images/icons/'.$stampCard->id.'.png');
-                
+
             }
             $stampCard->update(['stamp_icon_path' => $stamp_icon_path]);
             $stampCard = $stampCard->refresh();
@@ -77,6 +88,8 @@ class StampCardController extends Controller
 
     public function getAllByCurrentVisitor()
     {
+
+
         try{
             $userId = auth()->user()->id;
 
@@ -122,7 +135,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getByIdByCurrentVisitor($stampCardId){
+    public function getByIdAsVisitor($stampCardId){
         try{
             $userId = auth()->user()->id;
             $stampCard = StampCard::whereHas('visits', function($query) use ($userId){
@@ -157,35 +170,6 @@ class StampCardController extends Controller
         }
     }
 
-
-
-    public function getById(Request $request, $id)
-    {
-        try{
-            $stampCard = StampCard::find($id);
-            if (! $stampCard){
-                return response()->json(
-                    [
-                        'status' => 'error',
-                        'message' => 'Resource not found'
-                    ],404
-                );
-            }
-            $stampCard->load('business');
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'data' => [
-                        $stampCard
-                    ]
-                ],200
-            );
-        }catch(Exception $e){
-            return $e;
-        }
-
-    }
-
     public function getAllByCurrentCompany(){
         try{
             $businessesIds = auth()->user()->businesses->pluck('id');
@@ -217,9 +201,9 @@ class StampCardController extends Controller
         // Obtengo los bins de la imagen decodificando el string
         $bin = base64_decode($stamp_icon_string);
 
-        // obtengo el tamaño de la imagen en kilobytes 
+        // obtengo el tamaño de la imagen en kilobytes
         $imageSize = strlen($bin) / 1024;
-          
+
         // Checo si la imagen es mayor a el tamaño maximo
         if($imageSize > 500)
          {
@@ -228,11 +212,11 @@ class StampCardController extends Controller
 
         // convierto los bin en un Gdimage
         $im = imageCreateFromString($bin);
- 
-        // me aseguro de si tener la imagen 
+
+        // me aseguro de si tener la imagen
         if (!$im) {
             throw new Exception("Hubo un problema con la imagen o el archivo no es una imagen", 1);
-            
+
         }
         //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
         ob_start();
