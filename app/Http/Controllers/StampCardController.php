@@ -50,7 +50,7 @@ class StampCardController extends Controller
             $stampCard->save();
             if(!$request->stamp_icon_string)
             {
-                $stamp_icon_path = asset('storage/business/images/icons/placeholder.png'); 
+                $stamp_icon_path = asset('storage/placeholders/icon-placeholder.png'); 
             }
             else
             {

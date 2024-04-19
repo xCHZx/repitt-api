@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
 
 class AuthController extends Controller
 {
@@ -114,41 +116,106 @@ class AuthController extends Controller
     }
 
 
-    public function verifyEmail()
+    public function sendverifyEmail()
     {
         try {
 
             $userId = auth()->user()->id;
+            $userName = auth()->user()->name;
+            $email_verified_at = auth()->user()->email_verified_at;
+            $has_verified_email = auth()->user()->has_verified_email;
+            $userMail = auth()->user()->email;
 
-            $user = User::find($userId);
+            if (!$email_verified_at || !$has_verified_email) {
+                $validationCode = rand(10000, 99999);
+                // while (Cache::has($validationCode)) {
+                //     $validationCode = rand(10000, 99999);
+                // };
 
-            if (!$user->email_verified_at || !$user->has_verified_email) {
-                // ver como encriptar id pero no hashearlo 
-                // despues enviar el id hasheado al metodo que envia el correo
-                $hasedId = hash('sha512',$user->id);
-                app(EmailController::class)->sendVerifyEmail($userId, $user->email);
-            }
-            else{
-                throw new Exception("Error Processing Request", 1);
-                
+                Cache::add("userCode:" . $userId, $validationCode, now()->addMinutes(5));
+
+                app(EmailController::class)->sendVerifyEmail($validationCode, $userMail, $userName);
+            } else {
+                throw new Exception("This email has already been verified", 1);
+
             }
 
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'verification email sended successfully'
-                ],200
-                );
+                ],
+                200
+            );
         } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => $e->getMessage()
-                ],401
+                ],
+                401
             );
         }
 
 
+    }
+
+    public function verifyEmail(Request $request)
+    {
+
+            $rules = [
+                'verification_code' => 'required',
+            ];
+            $validator = Validator::make($request->input(), $rules);
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'errors' => $validator->errors()->all()
+                    ]
+                    ,
+                    400
+                );
+            }
+
+        try { 
+            $userId = auth()->user()->id;
+            $verificationCode = Cache::get("userCode:" . $userId);
+
+            if(!$verificationCode)
+            {
+                throw new Exception("This user does not have a verification code, or  your code may have expired", 1);
+                
+            }
+
+            if ($verificationCode == $request->verification_code) {
+                // modificar sus validaciones
+                $user = User::find($userId);
+                $user->has_verified_email = 1;
+                $user->email_verified_at = Carbon::now();
+                $user->save();
+
+                //eliminar el codigo del cache
+                Cache::forget("userCode:" . $userId);
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'message' => 'Email Verified with success'
+                    ],
+                    200
+                );
+            } else {
+               throw new Exception("Your verification code is not correct", 1);
+               
+            }
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ],400
+            );
+        }
     }
 
 

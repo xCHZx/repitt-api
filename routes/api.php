@@ -19,48 +19,17 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
-    });
-});
-
-//Company Profiles Routes
-Route::prefix('company')->group(function () {
-
-    Route::middleware(['auth:sanctum'])->group(function () {
-
-        //Negocio
-        Route::prefix('business')->group(function () {
-            // Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
-            // Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
-            // Route::put('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
-        });
-
-        //Tarjetas de sellos
-        Route::prefix('stampcard')->group(function () {
-            // Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
-            // Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
-        });
-
-        //Visitas
-        Route::prefix('visit')->group(function () {
-            // Route::post('/', [VisitController::class, 'storeAsCompany'])->name('visit.storeAsCompany');
-            // Route::get('{id}/logged-user', [StampCardController::class, 'getByIdByCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
-            // Route::get('/business/{id}', [VisitController::class, 'getAllByBusinessAsCompany'])->name('visit.getAllByBusinessAsCompany');
-            // Route::get('/stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCompany'])->name('visit.getAllByStampCardAsCompany');
-        });
+        Route::post('/sendMail',[AuthController::class,'sendVerifyEmail'])->name('mail.send');
+        Route::post('/verifyEmail',[AuthController::class,'verifyEmail'])->name('auth.verifyEmail');
     });
 
-
-
-});
-
-//Visitor Profiles Routes
-Route::prefix('visitor')->group(function () {
-
-    Route::middleware(['auth:sanctum'])->group(function () {
-        //Negocios
-        Route::prefix('business')->group(function () {
-            // Route::get('/visited/logged-in', [BusinessController::class, 'getVisitedByCurrentVisitor'])->name('business.getVisitedByCurrentVisitor');
-        });
+    //Business
+    Route::prefix('business')->group(function () {
+        Route::post('/', [BusinessController::class, 'store'])->name('business.store')->middleware('can:business.store');
+        Route::get('/{id}', [BusinessController::class, 'getById'])->name('business.getById');
+        Route::get('/user/current', [BusinessController::class, 'getAllByCurrentUser'])->name('business.getAllByCurrentUser');
+        Route::put('/user/current/{id}', [BusinessController::class, 'updateByCurrentUser'])->name('business.updateByCurrentUser');
+    });
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
@@ -86,5 +55,6 @@ Route::prefix('visitor')->group(function () {
 
 });
 
-//Utils
-Route::post('/sendMail',[EmailController::class,'sendVerifyEmail'])->name('mail.send');
+
+
+
