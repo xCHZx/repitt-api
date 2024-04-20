@@ -298,12 +298,13 @@ class AuthController extends Controller
 
             }
             $user->password = Hash::make($request->password);
-            $user->has_verified_email = 1;
-            $user->email_verified_at = Carbon::now();
+            // $user->has_verified_email = 1;
+            // $user->email_verified_at = Carbon::now();
             $user->save();
             Cache::forget('userToken:'.$token);
 
             // notificar al usuario por correo de que se ha cambiado su contraseña
+            app(EmailController::class)->notifyPasswordChange($user->name,$user->email);
 
             return response()->json(
                 [
@@ -317,7 +318,7 @@ class AuthController extends Controller
                 [
                     'status' => 'error',
                     'error' => $e->getMessage()
-                ],401
+                ],403
             );
         }
 
