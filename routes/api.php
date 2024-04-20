@@ -11,7 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 
 
-
+Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
+Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
 
 //Auth Routes
 Route::prefix('auth')->group(function () {
