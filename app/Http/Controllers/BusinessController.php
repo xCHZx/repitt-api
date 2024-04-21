@@ -96,7 +96,7 @@ class BusinessController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
-            'segment' => 'required|integer',
+            'segment_id' => 'required|integer',
         ];
         $validator = Validator::make($request->input(), $rules);
         if ($validator->fails()) {
@@ -116,7 +116,7 @@ class BusinessController extends Controller
             $business->description = $request->description;
             $business->address = $request->address;
             $business->phone = $request->phone;
-            $business->segment = $request->segment;
+            $business->segment_id = $request->segment_id;
             $business->save();
             if(!$request->logo_string)
             {

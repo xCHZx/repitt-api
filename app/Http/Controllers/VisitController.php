@@ -95,7 +95,7 @@ class VisitController extends Controller
         }
     }
 
-    public function getAllByStampCard()
+    public function getAllByStampCard() //Used
     {
         $stampCard = StampCard::find(1);
         $visits = $stampCard->visits;
@@ -108,12 +108,14 @@ class VisitController extends Controller
             ], 200
         );
     }
-    public function getAllByCurrentUser()
+    public function getAllByCurrentVisitor() //used
     {
         try{
             $userId = auth()->user()->id;
             $user = User::find($userId);
             $visits = $user->visits;
+            // Load the business and stampcard information for each visit
+            $visits->load('stamp_card.business');
             if (!$visits or $visits->isEmpty()){
                 return response()->json(
                     [
@@ -126,7 +128,8 @@ class VisitController extends Controller
                 [
                     'status' => 'success',
                     'data' => [
-                        $visits
+                        'visits' => $visits,
+                        'visits_count' => $visits->count()
                     ]
                 ], 200
             );}

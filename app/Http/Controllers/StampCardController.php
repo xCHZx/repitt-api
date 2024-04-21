@@ -86,7 +86,7 @@ class StampCardController extends Controller
 
     }
 
-    public function getAllByCurrentVisitor()
+    public function getAllByCurrentVisitor() //Used
     {
 
 
@@ -107,7 +107,9 @@ class StampCardController extends Controller
             $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
                 $query->where('user_id', $userId);
             })->with(['business' => function($query) {
-                $query->select('id', 'name', 'segment');
+                $query->select('id', 'name', 'logo_path','segment_id');
+            }, 'business.segment'])->with(['visits' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
             }])->withCount(['visits' => function($query) use ($userId) {
                 $query->where('user_id', $userId);
             }])->get();
@@ -135,14 +137,15 @@ class StampCardController extends Controller
         }
     }
 
-    public function getByIdAsVisitor($stampCardId){
+    public function getByIdAsVisitor($stampCardId) //Used
+    {
         try{
             $userId = auth()->user()->id;
             $stampCard = StampCard::whereHas('visits', function($query) use ($userId){
                 $query->where('user_id', $userId);
             })->with(['business' => function($query) {
-                $query->select('id', 'name', 'segment');
-            }])->with(['visits' => function($query) use ($userId) {
+                $query->select('id', 'name', 'logo_path','segment_id');
+            }, 'business.segment'])->with(['visits' => function($query) use ($userId) {
                 $query->where('user_id', $userId);
             }])->withCount(['visits' => function($query) use ($userId) {
                 $query->where('user_id', $userId);

@@ -70,9 +70,8 @@ Route::prefix('visitor')->group(function () {
         });
 
         Route::prefix('visit')->group(function () {
-        // Route::post('/', [VisitController::class, 'store'])->name('visit.store');
         // Route::get('/stampcard/{id}', [VisitController::class, 'getAllByStampCard'])->name('visit.getAllByStampCard');
-        // Route::get('/user/current', [VisitController::class, 'getAllByCurrentUser'])->name('visit.getAllByCurrentUser');
+        Route::get('/logged-user', [VisitController::class, 'getAllByCurrentVisitor'])->name('visit.getAllByCurrentVisitor');
         // Route::get('/business/{id}', [VisitController::class, 'getByBusiness'])->name('visit.getByBusiness');
         });
 

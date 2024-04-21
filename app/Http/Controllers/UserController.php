@@ -51,6 +51,17 @@ class UserController extends Controller
     {
         try{
             $user = auth()->user();
+            //Agregar la relación AccountStatus
+            $user->account_status;
+            //Agregar el total de visitas
+            $user->visits_count = $user->visits->count();
+            // Agregar sólo nombre del rol asignado
+            // if($user->hasRole('Owner')){
+            //     $user->role = 'Owner';
+            // }else{
+            //     $user->role = 'Visitor';
+            // }
+
             return response()->json(
                 [
                     'status' => 'success',
