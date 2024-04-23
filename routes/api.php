@@ -31,14 +31,15 @@ Route::prefix('company')->group(function () {
         //Negocio
         Route::prefix('business')->group(function () {
             Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
-            // Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
+            Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
+            Route::get('/{id}/logged-user', [BusinessController::class, 'getByIdByCurrentCompany'])->name('business.getByIdByCurrentCompany');
             // Route::put('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
         });
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
-            // Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
+            Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
         });
 
         //Visitas
@@ -70,9 +71,7 @@ Route::prefix('visitor')->group(function () {
         });
 
         Route::prefix('visit')->group(function () {
-        // Route::get('/stampcard/{id}', [VisitController::class, 'getAllByStampCard'])->name('visit.getAllByStampCard');
         Route::get('/logged-user', [VisitController::class, 'getAllByCurrentVisitor'])->name('visit.getAllByCurrentVisitor');
-        // Route::get('/business/{id}', [VisitController::class, 'getByBusiness'])->name('visit.getByBusiness');
         });
 
         Route::prefix('user')->group(function () {

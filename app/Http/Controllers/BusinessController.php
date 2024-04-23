@@ -255,6 +255,58 @@ class BusinessController extends Controller
         }
     }
 
+    public function getAllByCurrentCompany(){
+        try{
+            $res = auth()->user()->businesses()->with('segment')->get();
+            if (! $res or $res->isEmpty()){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $res
+                    ]
+                ],200
+            );
+
+        }catch
+        (Exception $e){
+            return $e;
+        }
+    }
+
+    public function getByIdByCurrentCompany($id){
+        try{
+            $res = auth()->user()->businesses()->with('segment')->find($id);
+            if (! $res){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $res
+                    ]
+                ],200
+            );
+
+        }catch
+        (Exception $e){
+            return $e;
+        }
+    }
+
     public function delete(Request $request)
     {
         return ('delete');

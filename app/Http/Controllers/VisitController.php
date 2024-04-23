@@ -17,8 +17,9 @@ class VisitController extends Controller
     {
         $rules = [
             'stamp_card_id' => 'required|integer',
-            'user_id' => 'required|integer',
+            'user_repitt_code' => 'required|string',
         ];
+
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
@@ -32,9 +33,12 @@ class VisitController extends Controller
 
         try{
 
+
+
             $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
 
-            $user = User::find($request->user_id);
+            // $user = User::find($request->user_id);
+            $user = User::where('repitt_code', $request->user_repitt_code)->first();
 
             //get the user's visits for the stamp card
             $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
@@ -53,7 +57,8 @@ class VisitController extends Controller
 
             if (!$visits or $visits->isEmpty()){
 
-                $user = User::find($request->user_id);
+                // $user = User::find($request->user_id);
+                $user = User::where('repitt_code', $request->user_repitt_code)->first();
                 $visit = new Visit();
                 $visit->user()->associate($user);
                 $stampCard->visits()->save($visit);
@@ -68,7 +73,8 @@ class VisitController extends Controller
             }else{
                 if ($this->isPast12Hours($visits)){
 
-                    $user = User::find($request->user_id);
+                    // $user = User::find($request->user_id);
+                    $user = User::where('repitt_code', $request->user_repitt_code)->first();
                     $visit = new Visit();
                     $visit->user()->associate($user);
                     $stampCard->visits()->save($visit);
