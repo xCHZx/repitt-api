@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Models\Segment;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;

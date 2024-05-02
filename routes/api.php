@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
@@ -48,6 +49,11 @@ Route::prefix('company')->group(function () {
             // Route::get('{id}/logged-user', [StampCardController::class, 'getByIdByCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
             // Route::get('/business/{id}', [VisitController::class, 'getAllByBusinessAsCompany'])->name('visit.getAllByBusinessAsCompany');
             // Route::get('/stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCompany'])->name('visit.getAllByStampCardAsCompany');
+        });
+
+        //Categorías de negocio
+        Route::prefix('segment')->group(function () {
+            Route::get('/', [SegmentController::class, 'getAllSegments'])->name('segment.getAllSegments');
         });
     });
 
