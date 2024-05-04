@@ -117,7 +117,7 @@ class BusinessController extends Controller
             $business->description = $request->description;
             $business->address = $request->address;
             $business->phone = $request->phone;
-            $business->segment_id = $request->segment;
+            $business->segment_id = $request->segment_id;
             if(!$request->logo_file)
             {
                 $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
