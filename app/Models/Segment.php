@@ -10,11 +10,9 @@ class Segment extends Model
 {
     use HasFactory;
 
-    protected $table = 'segments';
-
-    public function stamp_cards(): HasMany
+    public function business(): HasMany
     {
-        return $this->hasMany(Business::class, 'segment_id');
-    }
+        return $this->hasMany(Business::class);
 
+    }
 }

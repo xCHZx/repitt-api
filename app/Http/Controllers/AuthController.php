@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
 
 class AuthController extends Controller
 {
@@ -163,29 +164,28 @@ class AuthController extends Controller
     public function verifyEmail(Request $request)
     {
 
-            $rules = [
-                'verification_code' => 'required',
-            ];
-            $validator = Validator::make($request->input(), $rules);
-            if ($validator->fails()) {
-                return response()->json(
-                    [
-                        'status' => 'error',
-                        'errors' => $validator->errors()->all()
-                    ]
-                    ,
-                    400
-                );
-            }
+        $rules = [
+            'verification_code' => 'required',
+        ];
+        $validator = Validator::make($request->input(), $rules);
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'errors' => $validator->errors()->all()
+                ]
+                ,
+                400
+            );
+        }
 
-        try { 
+        try {
             $userId = auth()->user()->id;
             $verificationCode = Cache::get("userCode:" . $userId);
 
-            if(!$verificationCode)
-            {
+            if (!$verificationCode) {
                 throw new Exception("This user does not have a verification code, or  your code may have expired", 1);
-                
+
             }
 
             if ($verificationCode == $request->verification_code) {
@@ -205,17 +205,123 @@ class AuthController extends Controller
                     200
                 );
             } else {
-               throw new Exception("Your verification code is not correct", 1);
-               
+                throw new Exception("Your verification code is not correct", 1);
+
             }
         } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => $e->getMessage()
-                ],400
+                ],
+                400
             );
         }
+    }
+
+    public function sendPasswordRecoveryMail(Request $request)
+    {
+        // validar que el usuario me mando un correo
+        $rules = [
+            'email' => 'required'
+        ];
+        $validation = Validator::make($request->input(), $rules);
+        if ($validation->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'errors' => $validation->errors()->all()
+                ],
+                400
+            );
+        }
+
+        try {
+            $user = User::where('email', $request->email)->firstOrFail();
+            if (!$user) {
+                throw new Exception("El correo no coincide con ningun usuario", 1);
+
+            }
+            $userToken = rand(10000, 90000);
+            Cache::add('userToken:' . $userToken, $user->id, now()->addMinutes(5));
+            $encryptedToken = Crypt::encrypt($userToken);
+
+            app(EmailController::class)->sendPasswordRecoveryEmail($encryptedToken, $user->email, $user->first_name);
+
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => 'password email recovery sended succesfully'
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ],
+                401
+            );
+        }
+
+    }
+
+    public function recoverPassword(Request $request)
+    {
+        // validar 
+        $rules = [
+            'token' => 'required|string',
+            'password' => 'required|string'
+        ];
+        $validation = Validator::make($request->input(), $rules);
+        if ($validation->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'error' => $validation->errors()->all()
+                ],
+                401
+            );
+        }
+        try {
+            $token = Crypt::decrypt($request->token);
+            $userId = Cache::get('userToken:' . $token);
+            if (!$userId) {
+                throw new Exception("the token doesnt exist or  has expired", 1);
+
+            }
+            
+            $user = User::find($userId);
+            if (Hash::check($request->password,$user->password)) {
+                throw new Exception("your new password must be diferent to your old password", 1);
+
+            }
+            $user->password = Hash::make($request->password);
+            // $user->has_verified_email = 1;
+            // $user->email_verified_at = Carbon::now();
+            $user->save();
+            Cache::forget('userToken:'.$token);
+
+            // notificar al usuario por correo de que se ha cambiado su contraseña
+            app(EmailController::class)->notifyPasswordChange($user->name,$user->email);
+
+            return response()->json(
+                [
+                    'status' => 'succes',
+                    'message' => 'password changed succesfully'
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'error' => $e->getMessage()
+                ],403
+            );
+        }
+
     }
 
 

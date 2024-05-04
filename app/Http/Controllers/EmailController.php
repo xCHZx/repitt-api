@@ -23,12 +23,50 @@ class EmailController extends Controller
         );
         $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
         try {
-            $response = $sendgrid->send($email);
-            print $response->statusCode() . "\n";
-            print_r($response->headers());
-            print $response->body() . "\n";
+            $sendgrid->send($email);
         } catch (Exception $e) {
             echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+    }
+
+    public function sendPasswordRecoveryEmail($encryptedToken,$userEmail,$userName)
+    {
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("admin@medik.mx", "Rafael Payns");
+        $email->setSubject("Recupera tu Contraseña");
+        $email->addTo($userEmail, $userName);
+        $email->addContent(
+            "text/html",
+            "<p> Hola ".$userName." te enviamos este correo porque solicitaste recuperar tu contraseña </p>
+            <p> Da clic a este enlaze para recuperar tu contraseña : ".getenv('APP_URL')."/api/recoverPassword/".$encryptedToken."</p>
+            <p> si no fuiste tu el que solicito recupérar la contraseña ignora este correo </p>"
+        );
+        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+        try {
+            $sendgrid->send($email);
+        } catch (Exception $e) {
+            echo 'Caught exception: ' . $e->getMessage() . "\n";
+        }
+
+    }
+
+    public function notifyPasswordChange($userName,$userEmail)
+    {
+        $email = new \SendGrid\Mail\Mail();
+        $email->setFrom("admin@medik.mx","Rafael Payns");
+        $email->setSubject("Se ha cambiado tu contraseña");
+        $email->addTo($userEmail,$userName);
+        $email->addContent(
+            "text/html",
+            "<p> Hola".$userName." te enviamos este correo para notificarte que se ha modificado tu contraseña  </p>
+            <p> Si no fuiste tu el que realizo este cambio porfavor contacta a soporte en el siguiente correo : </p>
+            <p>En reppit nos preocupamos por la seguridad de tus datos y te recordamos mantener tus contraseñas seguras</p>"
+        );
+        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
+        try {
+            $sendgrid->send($email);
+        } catch (Exception $e) {
+            return $e;
         }
     }
 }

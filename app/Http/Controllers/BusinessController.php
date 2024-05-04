@@ -117,22 +117,20 @@ class BusinessController extends Controller
             $business->description = $request->description;
             $business->address = $request->address;
             $business->phone = $request->phone;
-            $business->segment_id = $request->segment_id;
-            $business->save();
-            if(!$request->logo_string)
+            $business->segment_id = $request->segment;
+            if(!$request->logo_file)
             {
-                $logo_path = asset('storage/placeholders/logo-placeholder.png');
+                $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
                 //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
             }
             else
             {
-                $this->generateLogo($request->logo_string,$business->id);
-                $logo_path = asset('storage/business/images/logo/'.$business->id.'.png');
+                $file = $request->file('logo_file');
+                $this->SaveLogo($file);
+                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
 
             }
-            $business->update(['logo_path' => $logo_path]);
-            $business = $business->refresh();
-
+            $business->save();
             $business->users()->attach(auth()->id());
             return response()->json(
                 [
@@ -167,10 +165,11 @@ class BusinessController extends Controller
             $business->description = $request->description;
             $business->address = $request->address;
 
-            if($request->logo_string)
+            if($request->logo_file)
             {
-                $this->generateLogo($request->logo_string,$id);
-                $business->logo_path = asset('storage/business/images/logo/'.$id.'.png');
+                $file = $request->file('logo_file');
+                $this->SaveLogo($file);
+                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
             }
             $business->save();
             return response()->json(
@@ -203,10 +202,11 @@ class BusinessController extends Controller
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
-            if($request->logo_string)
+            if($request->logo_file)
             {
-                $this->generateLogo($request->logo_string,$id);
-                $business->logo_path = asset('storage/business/images/logo/'.$id.'.png');
+                $file = $request->file('logo_file');
+                $this->SaveLogo($file);
+                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
             }
             $business->save();
             return response()->json(
@@ -313,36 +313,9 @@ class BusinessController extends Controller
         return ('delete');
     }
 
-    private function generateLogo($logo_string,$id)
+    private function SaveLogo($logo)
     {
-        // Obtengo los bins de la imagen decodificando el string
-        $bin = base64_decode($logo_string);
-
-        // obtengo el tamaño de la imagen en kilobytes
-        $imageSize = strlen($bin) / 1024;
-
-        // Checo si la imagen es mayor a el tamaño maximo
-        if($imageSize > 500)
-        {
-            throw new Exception("La imagen es mayor a 500 kb", 1);
-        }
-
-        // convierto los bin en un Gdimage
-        $im = imageCreateFromString($bin);
-
-        // me aseguro de si tener la imagen
-        if (!$im) {
-            throw new Exception("Este recurso no es una imagen o hubo un problema con la imagen", 1);
-
-        }
-        //guardo el recurso GD como una imagen png en el storage, para eso utilizo un buffer
-        ob_start();
-        imagepng($im);
-        $imagebuffer = ob_get_clean();
-        Storage::disk('public')->put('business/images/logo/'.$id.'.png',$imagebuffer);
-
-        // libero la memoria
-        imagedestroy($im);
+        Storage::disk('public')->put('business/images/logo/',$logo);
 
     }
 }

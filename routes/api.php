@@ -12,15 +12,22 @@ use Illuminate\Support\Facades\Route;
 
 
 
+Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
+Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
 
-
+Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
 //Auth Routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
+    Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
+   
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
+        Route::post('sendverifyemail', [AuthController::class , 'sendverifyEmail'])->name('auth.sendEmail');
+        Route::post('verifyemail', [AuthController::class , 'verifyEmail'])->name('auth.verifyEmail');
+        Route::post('updatepassword', [UserController::class,'updatePassword'])->name('user.updatePassword');
     });
 });
 
