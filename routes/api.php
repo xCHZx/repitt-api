@@ -21,7 +21,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
-   
+
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
@@ -39,15 +39,17 @@ Route::prefix('company')->group(function () {
         //Negocio
         Route::prefix('business')->group(function () {
             Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
+            Route::post('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
             Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
             Route::get('/{id}/logged-user', [BusinessController::class, 'getByIdByCurrentCompany'])->name('business.getByIdByCurrentCompany');
-            // Route::put('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
+
         });
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
             Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
+            Route::get('/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');
         });
 
         //Visitas

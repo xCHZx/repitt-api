@@ -97,7 +97,7 @@ class BusinessController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
-            'segment_id' => 'required|integer',
+            'segment' => 'required|integer',
         ];
         $validator = Validator::make($request->input(), $rules);
         if ($validator->fails()) {
@@ -112,12 +112,15 @@ class BusinessController extends Controller
         }
         try {
 
+            // return($request->logo_file);
+
             $business = new Business();
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
             $business->phone = $request->phone;
-            $business->segment_id = $request->segment_id;
+            $business->opening_hours = $request->opening_hours;
+            $business->segment_id = $request->segment;
             if(!$request->logo_file)
             {
                 $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
@@ -147,50 +150,38 @@ class BusinessController extends Controller
         }
     }
 
-
-    public function update(Request $request, $id)
+    public function updateByCurrentCompany(Request $request, $id)
     {
-        try {
-            if (!$business = Business::find($id)) {
-                return response()->json(
-                    [
-                        'status' => 'error',
-                        'message' => 'Resource not found'
-                    ],
-                    404
-                );
-            }
-            $business = Business::find($id);
-            $business->name = $request->name;
-            $business->description = $request->description;
-            $business->address = $request->address;
 
-            if($request->logo_file)
-            {
-                $file = $request->file('logo_file');
-                $this->SaveLogo($file);
-                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
-            }
-            $business->save();
+                // Validate if the user is an owner
+        if (!auth()->user()->hasRole('Owner')) {
             return response()->json(
                 [
-                    'status' => 'success',
-                    'message' => 'Business update successful',
-                    'data' => [
-                        'name' => $business->name,
-                    ]
+                    'status' => 'error',
+                    'message' => 'Unauthorized'
                 ],
-                200
-            );
-        } catch (Exception $e) {
-            return $e;
-        }
-    }
+                    401
+                );
+            }
 
-    public function updateByCurrentUser(Request $request, $id)
-    {
+        $rules = [
+            'name' => 'required|string|max:100',
+            //'logo_string' => 'required|base64_image_size:500',
+            'segment' => 'required|integer',
+        ];
+        $validator = Validator::make($request->input(), $rules);
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'errors' => $validator->errors()->all()
+                ]
+                ,
+                400
+            );
+        }
         try {
-            if (!$business = auth()->user()->businesses->find($id)) {
+            if (!$business = auth()->user()->businesses()->find($id)) {
                 return response()->json(
                     [
                         'status' => 'error',
@@ -199,9 +190,13 @@ class BusinessController extends Controller
                     404
                 );
             }
+            $business = auth()->user()->businesses()->find($id);
             $business->name = $request->name;
             $business->description = $request->description;
             $business->address = $request->address;
+            $business->phone = $request->phone;
+            $business->opening_hours = $request->opening_hours;
+            $business->segment_id = $request->segment;
             if($request->logo_file)
             {
                 $file = $request->file('logo_file');
