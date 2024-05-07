@@ -27,10 +27,8 @@ class StampCardController extends Controller
             'name' => 'required|string',
             'description' => 'required|string',
             'required_stamps' => 'required|integer',
-            //'stamp_icon_string' => 'required|base64_image_size:500',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
-            // 'stamp_icon_path' => 'required|string',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
             'reward' => 'required|string'
@@ -51,11 +49,10 @@ class StampCardController extends Controller
             $stampCard->name = $request->name;
             $stampCard->description = $request->description;
             $stampCard->required_stamps = $request->required_stamps;
-            //$stampCard->stamp_icon_path = $request->stamp_icon_path;
             $stampCard->start_date = $request->start_date;
             $stampCard->end_date = $request->end_date;
-            $stampCard->stamp_icon_path = $request->stamp_icon_path;
-            $stampCard->primary_color = $request->primary_color;
+            // $stampCard->stamp_icon_path = $request->stamp_icon_path;
+            // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
             $stampCard->reward = $request->reward;
             if(!$request->stamp_icon_file)
@@ -83,6 +80,79 @@ class StampCardController extends Controller
             return $e;
         }
 
+    }
+
+    public function updateByIdAsCurrentCompany(Request $request, $id){
+        if (!auth()->user()->hasRole('Owner')) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => 'Unauthorized Role'
+                ],
+                    401
+                );
+            }
+
+        $rules = [
+            'name' => 'required|string',
+            'description' => 'required|string',
+            // 'required_stamps' => 'required|integer',
+            // 'start_date' => 'required|date',
+            // 'end_date' => 'required|date',
+            // 'primary_color' => 'required|string',
+            // 'business_id' => 'required|integer',
+            // 'reward' => 'required|string'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $validator->errors()->all()
+                ], 400
+            );
+        }
+
+        try {
+            //Verify if the StampCard exists in the current business collection of the user
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
+            if (! $stampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            $stampCard->name = $request->name;
+            $stampCard->description = $request->description;
+            // $stampCard->required_stamps = $request->required_stamps;
+            // $stampCard->start_date = $request->start_date;
+            // $stampCard->end_date = $request->end_date;
+            // $stampCard->business_id = $request->business_id;
+            // $stampCard->reward = $request->reward;
+            if($request->hasFile('stamp_icon_file'))
+            {
+                $file = $request->file('stamp_icon_file');
+                $this->saveIcon($file);
+                $stampCard->stamp_icon_path = asset('storage/business/images/icons/'.$file->hashName());
+            }
+            $stampCard->save();
+
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCard
+                    ]
+                ], 201
+            );
+        } catch (Exception $e) {
+            return $e;
+        }
     }
 
     public function getAllByIdByCurrentCompany($businessId)
@@ -205,6 +275,39 @@ class StampCardController extends Controller
         }
     }
 
+    public function getByIdAsCurrentCompany($stampCardId){
+        try{
+            //Get the StampCard by stampCardId, the business_id of the StampCard must belong to the current business collection of the user
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $stampCard = StampCard::whereIn('business_id', $businessesIds)
+                ->withCount('visits')
+                ->with(['business' => function($query) {
+                    $query->select('id', 'name', 'logo_path');
+                }])
+                ->find($stampCardId);
+
+            if (! $stampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ],404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCard
+                    ]
+                ],200
+            );
+
+        }catch(Exception $e){
+            return $e;
+        }
+    }
+
     public function getAllByCurrentCompany(){
         try{
             $businessesIds = auth()->user()->businesses->pluck('id');
@@ -224,6 +327,8 @@ class StampCardController extends Controller
             return $e;
         }
     }
+
+
 
 
     public function delete(Request $request, $id)

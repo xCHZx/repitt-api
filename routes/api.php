@@ -24,7 +24,7 @@ Route::prefix('auth')->group(function () {
 
 
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout')->middleware('can:auth.logout');
+        Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('sendverifyemail', [AuthController::class , 'sendverifyEmail'])->name('auth.sendEmail');
         Route::post('verifyemail', [AuthController::class , 'verifyEmail'])->name('auth.verifyEmail');
         Route::post('updatepassword', [UserController::class,'updatePassword'])->name('user.updatePassword');
@@ -48,16 +48,19 @@ Route::prefix('company')->group(function () {
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
+            Route::post('/{id}/logged-user', [StampCardController::class, 'updateByIdAsCurrentCompany'])->name('stampcard.updateByIdAsCurrentCompany');
             Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
-            Route::get('/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');
+            Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');
+            Route::get('/{id}/logged-user', [StampCardController::class, 'getByIdAsCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
+
         });
 
         //Visitas
         Route::prefix('visit')->group(function () {
             Route::post('/', [VisitController::class, 'storeAsCompany'])->name('visit.storeAsCompany');
-            // Route::get('{id}/logged-user', [StampCardController::class, 'getByIdByCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
-            // Route::get('/business/{id}', [VisitController::class, 'getAllByBusinessAsCompany'])->name('visit.getAllByBusinessAsCompany');
-            // Route::get('/stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCompany'])->name('visit.getAllByStampCardAsCompany');
+            Route::get('stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCurrentCompany'])->name('visit.getAllByStampCardAsCurrentCompany');
+            Route::get('business/{id}/logged-user', [VisitController::class, 'getAllByBusinessAsCurrentCompany'])->name('visit.getAllByBusinessAsCurrentCompany');
+
         });
 
         //Categorías de negocio

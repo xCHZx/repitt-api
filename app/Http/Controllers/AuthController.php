@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
@@ -50,7 +51,13 @@ class AuthController extends Controller
             [
                 'status' => 'success',
                 'message' => 'User creation successful',
-                'token' => $token
+                'token' => $token,
+                'role' => $user->getRoleNames()->first(),
+                'data' => [
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                ]
             ],
             200
         );
@@ -94,8 +101,10 @@ class AuthController extends Controller
                 'status' => 'success',
                 'message' => 'User login successful',
                 'token' => $token,
+                'role' => $user->getRoleNames()->first(),
                 'data' => [
-                    'name' => $user->name,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
                 ]
             ],
@@ -269,7 +278,7 @@ class AuthController extends Controller
 
     public function recoverPassword(Request $request)
     {
-        // validar 
+        // validar
         $rules = [
             'token' => 'required|string',
             'password' => 'required|string'
@@ -291,7 +300,7 @@ class AuthController extends Controller
                 throw new Exception("the token doesnt exist or  has expired", 1);
 
             }
-            
+
             $user = User::find($userId);
             if (Hash::check($request->password,$user->password)) {
                 throw new Exception("your new password must be diferent to your old password", 1);

@@ -101,19 +101,7 @@ class VisitController extends Controller
         }
     }
 
-    public function getAllByStampCard() //Used
-    {
-        $stampCard = StampCard::find(1);
-        $visits = $stampCard->visits;
-        return response()->json(
-            [
-                'status' => 'success',
-                'data' => [
-                    $visits
-                ]
-            ], 200
-        );
-    }
+
     public function getAllByCurrentVisitor() //used
     {
         try{
@@ -144,7 +132,55 @@ class VisitController extends Controller
         }
     }
 
-    public function getByBusiness($id)
+
+    public function getAllByStampCardAsCurrentCompany($id)
+    {
+        try{
+            $stampCard = StampCard::find($id);
+            if (!$stampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'Resource not found'
+                    ], 404
+                );
+            }
+
+            //Check if the stampCard business exists in the user's businesses
+            $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
+            if (!in_array($stampCard->business_id, $userBusinessesIds)) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'You can only view visits for businesses in your company'
+                    ], 400
+                );
+            }
+
+            $stampCard->visits;
+
+            //Add the business relation to the stampCard
+            $stampCard->load('business:id,name,logo_path');
+
+            // Load the user information for each visit
+            $stampCard->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
+
+            // Add visits count
+            $stampCard->visits_count = $stampCard->visits->count();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCard,
+                    ]
+                ], 200
+            );
+        }catch(Exception $e){
+            return $e;
+        }
+    }
+
+    public function getAllByBusinessAsCurrentCompany($id)
     {
         try{
             $business = Business::find($id);
@@ -156,16 +192,40 @@ class VisitController extends Controller
                     ], 404
                 );
             }
-            $visits = $business->visits;
+
+            //Check if the business exists in the user's businesses
+            $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
+            if (!in_array($business->id, $userBusinessesIds)) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => 'You can only view visits for businesses in your company'
+                    ], 400
+                );
+            }
+
+            //Add all the visits for the business
+            $business->load('visits');
+
+            //Add the user information for each visit
+            $business->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
+
+            //Add the stamp card information for each visit
+
+
+            //Add the visits count for the business
+            $business->visits_count = $business->visits->count();
+
             return response()->json(
                 [
                     'status' => 'success',
                     'data' => [
-                        $visits
+                        $business,
                     ]
                 ], 200
-            );}
-        catch(Exception $e){
+            );
+
+        }catch(Exception $e){
             return $e;
         }
     }
