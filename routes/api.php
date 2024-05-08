@@ -5,9 +5,9 @@ use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
-use App\Http\Controllers\CheckoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,7 +34,7 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::get('/subscription-checkout',[CheckoutController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
+Route::get('/subscription-checkout',[SubscriptionController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
 Route::get('/checksuscription',[UserController::class,'hello'])->name('hello')->middleware(['auth:sanctum']);
 //Company Profiles Routes
 Route::prefix('company')->group(function () {
