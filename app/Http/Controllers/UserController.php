@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Laravel\Cashier\Subscription;
+
 
 class UserController extends Controller
 {
@@ -41,6 +43,7 @@ class UserController extends Controller
                 $user->assignRole('Visitor');
                 break;
         }
+        $user->createAsStripeCustomer();
         $user->save();
 
         $this->generateQr($repittCode);
@@ -68,8 +71,9 @@ class UserController extends Controller
                 [
                     'status' => 'error',
                     'error' => $e->getMessage()
-                ],403
-                );
+                ],
+                403
+            );
         }
         return response()->json(
             [
@@ -83,36 +87,36 @@ class UserController extends Controller
     public function updatePassword(Request $request)
     {
         $rules = [
-            'activePassword' => 'required|string', // contraseña actual del usuario
+            'activePassword' => 'required|string',
+            // contraseña actual del usuario
             'newPassword' => 'required|string' // contraseña que el usuario quiere usar
         ];
-        $validation = validator::make($request->input(),$rules);
-        if($validation->fails())
-        {
+        $validation = validator::make($request->input(), $rules);
+        if ($validation->fails()) {
             return response()->json(
                 [
                     'status' => 'error',
                     'error' => $validation->errors()->all()
-                ],401
+                ],
+                401
             );
         }
         try {
             $authenticatedUser = auth()->user();
-            if(!Hash::check($request->activePassword,$authenticatedUser->password))
-            {
+            if (!Hash::check($request->activePassword, $authenticatedUser->password)) {
                 throw new Exception("Wrong password", 1);
             }
-            if($request->activePassword == $request->newPassword)
-            {
+            if ($request->activePassword == $request->newPassword) {
                 throw new Exception("Your new passsord has to be different to your actual password", 1);
             }
-            User::where('id',$authenticatedUser->id)->update(['password' => Hash::make($request->newPassword)]);
-            app(EmailController::class)->notifyPasswordChange($authenticatedUser->name,$authenticatedUser->email);
+            User::where('id', $authenticatedUser->id)->update(['password' => Hash::make($request->newPassword)]);
+            app(EmailController::class)->notifyPasswordChange($authenticatedUser->name, $authenticatedUser->email);
             return response()->json(
                 [
                     'status' => 'success',
                     'message' => 'password changed successfully'
-                ],200
+                ],
+                200
             );
         } catch (Exception $e) {
             return response()->json(
@@ -181,13 +185,38 @@ class UserController extends Controller
         Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
 
     }
-// private function saveqrPath($repittCode,$userId)
+    // private function saveqrPath($repittCode,$userId)
 // {
 //     $this->generateQr($repittCode,$userId);
 
-//     $user = User::find($userId);
+    //     $user = User::find($userId);
 //     $user->qr_path = asset('storage/business/images/qr/'.$userId.'.png');
 //     $user->save();
 
-// }
+    // }
+
+    public function getUserByStripeId($stripeId)
+    {
+        return User::where('stripe_id', $stripeId)->firstOrFail();
+    }
+
+    public function hello()
+    {
+        try {
+            $user = auth()->user();
+            if ($user->subscribed()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'todo chido'
+                ], 200);
+            } else {
+                throw new Exception("Error Processing Request", 1);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'no estas suscrito qlero, pagame'
+            ],401);
+        }
+    }
 }
