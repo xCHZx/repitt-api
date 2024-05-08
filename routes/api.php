@@ -4,8 +4,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\StampCardController;
+use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
 Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
+Route::post('/stripe-webhook', [StripeWebhookController::class,'handlewebhook'])->name('webhook');
+
 
 Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
 //Auth Routes
@@ -30,6 +34,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+Route::get('/subscription-checkout',[CheckoutController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
+Route::get('/checksuscription',[UserController::class,'hello'])->name('hello')->middleware(['auth:sanctum']);
 //Company Profiles Routes
 Route::prefix('company')->group(function () {
 
