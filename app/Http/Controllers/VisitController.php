@@ -20,7 +20,6 @@ class VisitController extends Controller
             'user_repitt_code' => 'required|string',
         ];
 
-
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             return response()->json(
@@ -32,8 +31,6 @@ class VisitController extends Controller
         }
 
         try{
-
-
 
             $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
 
@@ -50,7 +47,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'You can only visit businesses in your company'
+                        'message' => ['Visit unsuccesful']
                     ], 400
                 );
             }
@@ -90,14 +87,19 @@ class VisitController extends Controller
                     return response()->json(
                         [
                             'status' => 'error',
-                            'message' => 'You can only visit once every 12 hours',
+                            'message' => ['You can only visit once every 12 hours']
                         ], 400
                     );
                 }
             }
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
         }
     }
 
@@ -114,7 +116,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ], 404
                 );
             }
@@ -128,7 +130,12 @@ class VisitController extends Controller
                 ], 200
             );}
         catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
         }
     }
 
@@ -141,7 +148,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ], 404
                 );
             }
@@ -152,7 +159,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'You can only view visits for businesses in your company'
+                        'message' => ['Error retrieving visits for this stamp card. You can only view visits for businesses in your company']
                     ], 400
                 );
             }
@@ -176,7 +183,12 @@ class VisitController extends Controller
                 ], 200
             );
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
         }
     }
 
@@ -188,7 +200,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ], 404
                 );
             }
@@ -199,7 +211,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'You can only view visits for businesses in your company'
+                        'message' => ['You can only view visits for businesses in your company']
                     ], 400
                 );
             }
@@ -226,7 +238,12 @@ class VisitController extends Controller
             );
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
         }
     }
 

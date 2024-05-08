@@ -32,7 +32,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validator->errors()->all()
+                    'message' => $validator->errors()->all()
                 ]
                 ,
                 400
@@ -74,7 +74,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validator->errors()->all()
+                    'message' => $validator->errors()->all()
                 ]
                 ,
                 400
@@ -85,7 +85,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => 'Wrong credentials'
+                    'message' => ['Wrong credentials']
                 ]
                 ,
                 400
@@ -161,7 +161,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => $e->getMessage()
+                    'message' => [$e->getMessage()]
                 ],
                 401
             );
@@ -181,7 +181,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validator->errors()->all()
+                    'message' => $validator->errors()->all()
                 ]
                 ,
                 400
@@ -221,7 +221,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => $e->getMessage()
+                    'message' => [$e->getMessage()]
                 ],
                 400
             );
@@ -239,7 +239,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validation->errors()->all()
+                    'message' => $validation->errors()->all()
                 ],
                 400
             );
@@ -268,7 +268,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => $e->getMessage()
+                    'message' => [$e->getMessage()]
                 ],
                 401
             );
@@ -288,7 +288,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'error' => $validation->errors()->all()
+                    'message' => $validation->errors()->all()
                 ],
                 401
             );
@@ -326,7 +326,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'error' => $e->getMessage()
+                    'message' => [$e->getMessage()]
                 ],403
             );
         }

@@ -52,7 +52,7 @@ class UserController extends Controller
     {
         try {
             $authenticatedUser = auth()->user();
-            // modificar todos los datos que el usuario envio 
+            // modificar todos los datos que el usuario envio
             $user = User::find($authenticatedUser->id);
             $user->first_name = (isset($request->first_name)) ? $request->first_name : $authenticatedUser->first_name;
             $user->last_name = (isset($request->last_name)) ? $request->last_name : $authenticatedUser->last_name;
@@ -74,7 +74,7 @@ class UserController extends Controller
         return response()->json(
             [
                 'status' => 'success',
-                'message' => 'user data has changed'
+                'message' => 'User updated successfully'
             ],
             200
         );
@@ -118,7 +118,7 @@ class UserController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => $e->getMessage()
+                    'message' => [$e->getMessage()]
                 ],403
             );
         }
@@ -149,7 +149,13 @@ class UserController extends Controller
                 200
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                400
+            );
         }
     }
 

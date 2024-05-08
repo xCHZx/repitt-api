@@ -13,48 +13,6 @@ use Illuminate\Support\Str;
 
 class BusinessController extends Controller
 {
-    public function getAll(){
-        try{
-            $businesses = Business::all();
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'data' => [
-                        $businesses
-                    ]
-                ],200
-            );
-
-        }catch(Exception $e){
-            return $e;
-        }
-    }
-
-    public function getById($id){
-        try{
-            if (! $business = Business::find($id)){
-                return response()->json(
-                    [
-                        'status' => 'error',
-                        'message' => 'Resource not found'
-                    ],
-                    404
-                );
-            }
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'data' => [
-                        $business
-                    ]
-                ],
-                200
-            );
-        } catch (Exception $e) {
-            return $e;
-        }
-    }
-
     public function getAllByCurrentUser()
     {
         try {
@@ -62,7 +20,7 @@ class BusinessController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],
                     404
                 );
@@ -77,7 +35,13 @@ class BusinessController extends Controller
                 200
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
         }
     }
 
@@ -88,7 +52,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => 'Unauthorized'
+                    'message' => ['Unauthorized']
                 ],
                     401
                 );
@@ -104,7 +68,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validator->errors()->all()
+                    'message' => $validator->errors()->all()
                 ]
                 ,
                 400
@@ -146,7 +110,13 @@ class BusinessController extends Controller
                 200
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
         }
     }
 
@@ -158,7 +128,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => 'Unauthorized'
+                    'message' => ['Unauthorized']
                 ],
                     401
                 );
@@ -174,7 +144,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'errors' => $validator->errors()->all()
+                    'message' => $validator->errors()->all()
                 ]
                 ,
                 400
@@ -185,7 +155,7 @@ class BusinessController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],
                     404
                 );
@@ -215,7 +185,13 @@ class BusinessController extends Controller
                 200
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
         }
     }
 
@@ -232,7 +208,7 @@ class BusinessController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -245,9 +221,13 @@ class BusinessController extends Controller
                 ],200
             );
 
-        }catch
-        (Exception $e){
-            return $e;
+        }catch(Exception $e){
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],404
+            );
         }
     }
 
@@ -258,7 +238,7 @@ class BusinessController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -273,7 +253,12 @@ class BusinessController extends Controller
 
         }catch
         (Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],404
+            );
         }
     }
 
@@ -284,7 +269,7 @@ class BusinessController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -299,13 +284,13 @@ class BusinessController extends Controller
 
         }catch
         (Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],404
+            );
         }
-    }
-
-    public function delete(Request $request)
-    {
-        return ('delete');
     }
 
     private function SaveLogo($logo)

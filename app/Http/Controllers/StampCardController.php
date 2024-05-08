@@ -87,7 +87,7 @@ class StampCardController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'message' => 'Unauthorized Role'
+                    'message' => ['Unauthorized Role']
                 ],
                     401
                 );
@@ -123,7 +123,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -151,7 +151,12 @@ class StampCardController extends Controller
                 ], 201
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
         }
     }
 
@@ -165,7 +170,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -181,7 +186,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -195,14 +200,17 @@ class StampCardController extends Controller
             );
         }
         catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],400
+            );
         }
     }
 
     public function getAllByCurrentVisitor() //Used
     {
-
-
         try{
             $userId = auth()->user()->id;
 
@@ -221,7 +229,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -235,7 +243,12 @@ class StampCardController extends Controller
             );
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],400
+            );
         }
     }
 
@@ -257,7 +270,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -271,7 +284,12 @@ class StampCardController extends Controller
             );
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],400
+            );
         }
     }
 
@@ -290,7 +308,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => 'Resource not found'
+                        'message' => ['Resource not found']
                     ],404
                 );
             }
@@ -304,7 +322,12 @@ class StampCardController extends Controller
             );
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],400
+            );
         }
     }
 
@@ -324,22 +347,17 @@ class StampCardController extends Controller
             );
         }
         catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],400
+            );
         }
-    }
-
-
-
-
-    public function delete(Request $request, $id)
-    {
-
     }
 
     private function saveIcon($stamp_icon)
     {
-
         Storage::disk('public')->put('business/images/icons/',$stamp_icon);
     }
-
 }

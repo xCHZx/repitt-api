@@ -21,7 +21,12 @@ class SegmentController extends Controller
             );
 
         }catch(Exception $e){
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],404
+            );
         }
     }
 }
