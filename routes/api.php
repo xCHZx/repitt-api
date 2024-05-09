@@ -6,9 +6,9 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\StripeWebhookController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
-use App\Http\Controllers\CheckoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

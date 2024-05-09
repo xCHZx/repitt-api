@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Laravel\Cashier\Cashier;
 use Illuminate\Support\Carbon;
 use Laravel\Cashier\Subscription;
 use Illuminate\Routing\Controller;
+use App\Http\Controllers\SubscriptionController;
 use Symfony\Component\HttpFoundation\Response;
 use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
 
@@ -202,19 +204,21 @@ class StripeWebhookController extends Controller
      */
     protected function handleInvoicePaymentSucceeded(array $payload)
     {
-        $subscriptionId = $payload['data']['object']['id'];
+        try {    
         $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
-    
-        // Crea una nueva suscripción en la base de datos
-        Subscription::create([
-            'user_id' => $user->id,
-            'stripe_id' => $subscriptionId,
-            'type' => 'default',
-            'stripe_status' => 'active'
-            // no se como llenar los demas jaja
-        ]);
-    
+        if($user->subscribed())
+        {
+            return response('Webhook Handled', 200);
+        }
+        $subscriptionId = $payload['data']['object']['id'];
+        app(SubscriptionController::class)->store($user->id,$subscriptionId);
         return response('Webhook Handled', 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => $e
+            ],500);
+        }
     }
 
 }
