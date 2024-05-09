@@ -51,7 +51,7 @@ class StripeWebhookController extends Controller
      * @param  array $payload
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    
+
     protected function handleCustomerSubscriptionUpdated(array $payload)
     {
         $user = $this->getUserByStripeId($payload['data']['object']['customer']);
@@ -204,7 +204,7 @@ class StripeWebhookController extends Controller
      */
     protected function handleInvoicePaymentSucceeded(array $payload)
     {
-        try {    
+        try {
         $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
         if($user->subscribed())
         {
@@ -216,7 +216,7 @@ class StripeWebhookController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'error' => $e
+                'message' => $e
             ],500);
         }
     }

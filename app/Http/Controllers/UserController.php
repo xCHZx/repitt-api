@@ -76,7 +76,7 @@ class UserController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'error' => $e->getMessage()
+                    'message' => $e->getMessage()
                 ],
                 403
             );
@@ -102,7 +102,7 @@ class UserController extends Controller
             return response()->json(
                 [
                     'status' => 'error',
-                    'error' => $validation->errors()->all()
+                    'message' => $validation->errors()->all()
                 ],
                 401
             );
@@ -221,7 +221,7 @@ class UserController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'error' => 'no estas suscrito qlero, pagame'
+                'message' => 'no estas suscrito qlero, pagame'
             ],401);
         }
     }

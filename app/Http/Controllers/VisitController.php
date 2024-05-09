@@ -116,7 +116,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => ['Resource not found']
+                        'message' => ['There are no visits']
                     ], 404
                 );
             }

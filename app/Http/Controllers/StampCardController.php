@@ -229,7 +229,7 @@ class StampCardController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => ['Resource not found']
+                        'message' => ['There are no StampCards']
                     ],404
                 );
             }

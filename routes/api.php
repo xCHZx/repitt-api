@@ -3,13 +3,14 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
-use App\Http\Controllers\SegmentController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
+use App\Http\Controllers\SegmentController;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Route;
 
 
@@ -108,7 +109,7 @@ Route::prefix('visitor')->group(function () {
 
 Route::prefix('subscription')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::get('/checkout',[CheckoutController::class,'checkout'])->name('subscription.checkout');
+        Route::get('/checkout',[SubscriptionController::class,'checkout'])->name('subscription.checkout');
     });
 });
 
