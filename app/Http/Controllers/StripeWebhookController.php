@@ -204,9 +204,13 @@ class StripeWebhookController extends Controller
      */
     protected function handleInvoicePaymentSucceeded(array $payload)
     {
-        try {
-            $subscriptionId = $payload['data']['object']['id'];
+        try {    
         $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
+        if($user->subscribed())
+        {
+            return response('Webhook Handled', 200);
+        }
+        $subscriptionId = $payload['data']['object']['id'];
         app(SubscriptionController::class)->store($user->id,$subscriptionId);
         return response('Webhook Handled', 200);
         } catch (Exception $e) {
