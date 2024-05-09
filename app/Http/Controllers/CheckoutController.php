@@ -14,7 +14,7 @@ class CheckoutController extends Controller
     {
         $customer = auth()->user()->stripe_id;
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
-        $YOUR_DOMAIN = 'http://localhost:4242';
+        $YOUR_DOMAIN = env('FRONT_URL');
 
         $checkout_session = \Stripe\Checkout\Session::create([
             'customer' => $customer,
@@ -23,13 +23,15 @@ class CheckoutController extends Controller
               'quantity' => 1,
             ]],
             'mode' => 'subscription',
-            'success_url' => $YOUR_DOMAIN . '/success.html',
-            'cancel_url' => $YOUR_DOMAIN . '/cancel.html',
+            'success_url' => $YOUR_DOMAIN . '/planes/gracias',
+            'cancel_url' => $YOUR_DOMAIN . '/planes/cancelado',
         ]);
 
         $response = response()->json($checkout_session->url);
         $response->header('content-type','aplication/json');
-        return $response;
+        return response()->json([
+            'url' => $checkout_session->url
+        ]);
     }
 
 }

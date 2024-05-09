@@ -43,8 +43,14 @@ class UserController extends Controller
                 $user->assignRole('Visitor');
                 break;
         }
-        $user->createAsStripeCustomer();
-        $user->save();
+        $user->createAsStripeCustomer(
+            [
+                'name' => "{$user->firstName} {$user->lastName}",
+                'email' => $user->email,
+                'phone' => $user->phone,
+            ]
+        );
+        // $user->save();
 
         $this->generateQr($repittCode);
 
