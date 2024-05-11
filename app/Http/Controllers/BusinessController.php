@@ -61,7 +61,7 @@ class BusinessController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
-            'segment' => 'required|integer',
+            'segment_id' => 'required|integer',
         ];
         $validator = Validator::make($request->input(), $rules);
         if ($validator->fails()) {
@@ -84,7 +84,83 @@ class BusinessController extends Controller
             $business->address = $request->address;
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
-            $business->segment_id = $request->segment;
+            $business->segment_id = $request->segment_id;
+            if(!$request->logo_file)
+            {
+                $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
+                //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
+            }
+            else
+            {
+                $file = $request->file('logo_file');
+                $this->SaveLogo($file);
+                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
+
+            }
+            $business->save();
+            $business->users()->attach(auth()->id());
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => 'Business creation successful',
+                    'data' => [
+                        $business,
+                    ]
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
+        }
+    }
+
+    public function storeFromLogin($request, $userId)
+    {
+        // Validate if the user is an owner
+        $user = User::find($userId);
+        if (!$user->hasRole('Owner')) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => ['Unauthorized']
+                ],
+                    401
+                );
+            }
+
+        $rules = [
+            'name' => 'required|string|max:100',
+            //'logo_string' => 'required|base64_image_size:500',
+            'segment_id' => 'required|integer',
+        ];
+        $validator = Validator::make($request, $rules);
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $validator->errors()->all()
+                ]
+                ,
+                400
+            );
+        }
+        try {
+
+            // return($request->logo_file);
+
+            $business = new Business();
+            $business->name = $request["name"];
+            $business->description = $request["description"];
+            $business->address = $request["address"];
+            $business->phone = $request["phone"];
+            $business->opening_hours = $request["opening_hours"];
+            $business->segment_id = $request["segment"];
             if(!$request->logo_file)
             {
                 $business->logo_path = asset('storage/placeholders/logo-placeholder.png');

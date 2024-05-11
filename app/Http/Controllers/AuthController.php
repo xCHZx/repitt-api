@@ -24,7 +24,7 @@ class AuthController extends Controller
             'phone' => 'required|string|max:20|unique:users',
             'email' => 'required|string|email|max:100|unique:users',
             'password' => 'required|string|min:8',
-            'account_status' => 'required',
+            // 'account_status' => 'required',
             'role' => 'required' //Falta validar que acepte un enum de 2 opciones o con un IF, checar validation rules de laravel
         ];
         $validator = Validator::make($request->input(), $rules);

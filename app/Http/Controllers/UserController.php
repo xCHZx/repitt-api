@@ -22,7 +22,7 @@ class UserController extends Controller
         $user->last_name = $request->last_name;
         $user->phone = $request->phone;
         $user->email = $request->email;
-        $user->account_status_id = $request->account_status;
+        $user->account_status_id = 1; //Falta definir diferentes estados de cuenta
         $user->password = hash::make($request->password);
         $repittCode = $this->generateRepittCode();
 
@@ -33,10 +33,10 @@ class UserController extends Controller
         $user->qr_path = asset('storage/business/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');
 
         switch ($request->role) {
-            case 'Owner':
+            case 'company':
                 $user->assignRole('Owner');
                 break;
-            case 'Visitor':
+            case 'visitor':
                 $user->assignRole('Visitor');
                 break;
             default:

@@ -24,6 +24,7 @@ Route::post('update', [UserController::class,'update'])->name('user.update')->mi
 //Auth Routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
+    Route::post('/dual-register', [AuthController::class, 'dualRegister'])->name('auth.dualRegister');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
 
@@ -69,11 +70,6 @@ Route::prefix('company')->group(function () {
             Route::get('business/{id}/logged-user', [VisitController::class, 'getAllByBusinessAsCurrentCompany'])->name('visit.getAllByBusinessAsCurrentCompany');
 
         });
-
-        //Categorías de negocio
-        Route::prefix('segment')->group(function () {
-            Route::get('/', [SegmentController::class, 'getAllSegments'])->name('segment.getAllSegments');
-        });
     });
 
 
@@ -113,5 +109,11 @@ Route::prefix('subscription')->group(function () {
     });
 });
 
+Route::prefix('utils')->group(function () {
+    //Categorías de negocio
+    Route::prefix('segments')->group(function () {
+        Route::get('/', [SegmentController::class, 'getAllSegments'])->name('segment.getAllSegments');
+    });
+});
 
 
