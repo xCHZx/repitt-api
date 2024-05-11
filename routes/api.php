@@ -34,7 +34,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::get('/subscription-checkout',[SubscriptionController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
+Route::post('/subscription-checkout',[SubscriptionController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
+Route::get('/billing-portal',[UserController::class,'createCustomerPortalSession'])->name('user.billing-portal')->middleware(['auth:sanctum']);
 Route::get('/checksuscription',[UserController::class,'hello'])->name('hello')->middleware(['auth:sanctum']);
 //Company Profiles Routes
 Route::prefix('company')->group(function () {

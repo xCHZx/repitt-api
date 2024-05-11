@@ -44,9 +44,9 @@ class UserController extends Controller
                 break;
         }
         $user->createAsStripeCustomer();
-        $user->save();
 
         $this->generateQr($repittCode);
+
 
         return $user;
     }
@@ -200,7 +200,66 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'error',
                 'error' => 'no estas suscrito qlero, pagame'
-            ],401);
+            ], 401);
+        }
+    }
+
+    public function createCustomerPortalSession(Request $request)
+    {
+        // $rules = ['password' => 'required|string'];
+        // $validator = Validator::make($request->input(), $rules);
+        // if ($validator->fails()) {
+        //     return response()->json(
+        //         [
+        //             'status' => 'error',
+        //             'errors' => $validator->errors()->all()
+        //         ]
+        //         ,
+        //         400
+        //     );
+        // }
+        try {
+            // obtener al usuario autenticado
+            $userId = auth()->user()->id;
+            $user = User::find($userId)->firstOrFail();
+            // if(!$user)
+            // {
+            //     throw new Exception("User not authenticated", 1);
+                
+            // };
+            // // validar su contraseña
+            // if(!Hash::check($request->password,$user->password))
+            // {
+            //     throw new Exception("Your password is incorrect", 1);
+            // };
+            $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
+            return $stripe->billingPortal->sessions->create([
+                'customer' => $user->stripe_id,
+                'return_url' => 'https://example.com/account',
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+
+    }
+
+    public function updateFromStripe($payload)
+    {
+        try {
+            $user = User::where('stripe_id',$payload['data']['object']['id'])->first();
+            if(!$user)
+            {
+                throw new Exception("no hay usuario", 1); 
+            }
+            $user->email = $payload['data']['object']['email'];
+            $user->phone = $payload['data']['object']['phone'];
+            $user->first_name = $payload['data']['object']['name'];
+            if ($user->isDirty('email')) {
+                $user->has_verified_email = 0;
+            }
+            $user->save();
+        } catch (Exception $e) {
+            return $e;
         }
     }
 }
