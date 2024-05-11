@@ -12,6 +12,8 @@ use Illuminate\Routing\Controller;
 use App\Http\Controllers\SubscriptionController;
 use Symfony\Component\HttpFoundation\Response;
 use Laravel\Cashier\Http\Middleware\VerifyWebhookSignature;
+use Stripe\Stripe;
+use Stripe\Subscription as StripeSubscription;
 
 class StripeWebhookController extends Controller
 {
@@ -20,6 +22,17 @@ class StripeWebhookController extends Controller
      *
      * @return void
      */
+    /*
+    *Custormer.suscription.updated*
+    -customer.subscription.created
+    *customer.subscription.deleted*
+    *customer.updated*
+    *customer.deleted*
+    -payment_method.automatically_updated
+    -invoice.payment_action_required
+    *invoice.payment_succeded*
+    */
+
     public function __construct()
     {
         if (env('STRIPE_WEBHOOK_SECRET')) {
@@ -51,47 +64,115 @@ class StripeWebhookController extends Controller
      * @param  array $payload
      * @return \Symfony\Component\HttpFoundation\Response
      */
-
-    protected function handleCustomerSubscriptionUpdated(array $payload)
+    protected function handleCustomerSubscriptionCreated(array $payload)
     {
-        $user = $this->getUserByStripeId($payload['data']['object']['customer']);
-
+        $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
         if ($user) {
             $data = $payload['data']['object'];
 
-            $user->subscriptions->filter(function (Subscription $subscription) use ($data) {
-                return $subscription->stripe_id === $data['id'];
-            })->each(function (Subscription $subscription) use ($data) {
-                // Quantity...
-                if (isset($data['quantity'])) {
-                    $subscription->quantity = $data['quantity'];
-                }
-
-                // Plan...
-                if (isset($data['plan']['id'])) {
-                    $subscription->stripe_plan = $data['plan']['id'];
-                }
-
-                // Trial ending date...
+            if (! $user->subscriptions->contains('stripe_id', $data['id'])) {
                 if (isset($data['trial_end'])) {
-                    $trial_ends = Carbon::createFromTimestamp($data['trial_end']);
-
-                    if (! $subscription->trial_ends_at || $subscription->trial_ends_at->ne($trial_ends)) {
-                        $subscription->trial_ends_at = $trial_ends;
-                    }
+                    $trialEndsAt = Carbon::createFromTimestamp($data['trial_end']);
+                } else {
+                    $trialEndsAt = null;
                 }
 
-                // Cancellation date...
-                if (isset($data['cancel_at_period_end']) && $data['cancel_at_period_end']) {
-                    $subscription->ends_at = $subscription->onTrial()
-                                ? $subscription->trial_ends_at
-                                : Carbon::createFromTimestamp($data['current_period_end']);
-                }
+                $firstItem = $data['items']['data'][0];
+                $isSinglePrice = count($data['items']['data']) === 1;
 
-                $subscription->save();
-            });
+                $type = $data['metadata']['type'] ?? $data['metadata']['name'] ?? $this->newSubscriptionType($payload);
+                $stripeId = $data['id'];
+                $stripeStatus = $data['status'];
+                $stripePrice = $isSinglePrice ? $firstItem['price']['id'] : null;
+                $quantity = $isSinglePrice && isset($firstItem['quantity']) ? $firstItem['quantity'] : null;
+                $subscription = app(SubscriptionController::class)->store(
+                    $user,$type,$stripeId,$stripeStatus,$stripePrice,$quantity,$trialEndsAt
+                );
+                app(SubscriptionController::class)->storeItems($subscription,$data);
+            }
+
+            // Terminate the billable's generic trial if it exists...
+            if (! is_null($user->trial_ends_at)) {
+                $user->update(['trial_ends_at' => null]);
+            }
         }
+        return new Response('Webhook Handled', 200);
+    }
+    protected function handleCustomerSubscriptionUpdated(array $payload)
+    {
+        if ($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer'])) {
+            $data = $payload['data']['object'];
 
+            $subscription = $user->subscriptions()->firstOrNew(['stripe_id' => $data['id']]);
+
+            if (
+                isset($data['status']) &&
+                $data['status'] === StripeSubscription::STATUS_INCOMPLETE_EXPIRED
+            ) {
+                $subscription->items()->delete();
+                $subscription->delete();
+
+                return new Response('Webhook Handled', 200);
+            }
+
+            $subscription->type = $subscription->type ?? $data['metadata']['type'] ?? $data['metadata']['name'] ?? $this->newSubscriptionType($payload);
+
+            $firstItem = $data['items']['data'][0];
+            $isSinglePrice = count($data['items']['data']) === 1;
+
+            // Price...
+            $subscription->stripe_price = $isSinglePrice ? $firstItem['price']['id'] : null;
+
+            // Quantity...
+            $subscription->quantity = $isSinglePrice && isset($firstItem['quantity']) ? $firstItem['quantity'] : null;
+
+            // Trial ending date...
+            if (isset($data['trial_end'])) {
+                $trialEnd = Carbon::createFromTimestamp($data['trial_end']);
+
+                if (! $subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
+                    $subscription->trial_ends_at = $trialEnd;
+                }
+            }
+
+            // Cancellation date...
+            if ($data['cancel_at_period_end'] ?? false) {
+                $subscription->ends_at = $subscription->onTrial()
+                    ? $subscription->trial_ends_at
+                    : Carbon::createFromTimestamp($data['current_period_end']);
+            } elseif (isset($data['cancel_at']) || isset($data['canceled_at'])) {
+                $subscription->ends_at = Carbon::createFromTimestamp($data['cancel_at'] ?? $data['canceled_at']);
+            } else {
+                $subscription->ends_at = null;
+            }
+
+            // Status...
+            if (isset($data['status'])) {
+                $subscription->stripe_status = $data['status'];
+            }
+
+            $subscription->save();
+
+            // Update subscription items...
+            if (isset($data['items'])) {
+                $subscriptionItemIds = [];
+
+                foreach ($data['items']['data'] as $item) {
+                    $subscriptionItemIds[] = $item['id'];
+
+                    $subscription->items()->updateOrCreate([
+                        'stripe_id' => $item['id'],
+                    ], [
+                        'stripe_product' => $item['price']['product'],
+                        'stripe_price' => $item['price']['id'],
+                        'quantity' => $item['quantity'] ?? null,
+                    ]);
+                }
+
+                // Delete items that aren't attached to the subscription anymore...
+                $subscription->items()->whereNotIn('stripe_id', $subscriptionItemIds)->delete();
+            }
+        }
         return new Response('Webhook Handled', 200);
     }
 
@@ -103,13 +184,13 @@ class StripeWebhookController extends Controller
      */
     protected function handleCustomerSubscriptionDeleted(array $payload)
     {
-        $user = $this->getUserByStripeId($payload['data']['object']['customer']);
+        $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
 
         if ($user) {
             $user->subscriptions->filter(function ($subscription) use ($payload) {
                 return $subscription->stripe_id === $payload['data']['object']['id'];
             })->each(function ($subscription) {
-                $subscription->markAsCancelled();
+                app(SubscriptionController::class)->cancellSubscription($subscription);
             });
         }
 
@@ -122,13 +203,16 @@ class StripeWebhookController extends Controller
      * @param  array $payload
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    protected function handleCustomerUpdated(array $payload)
+    protected function handlecustomerupdated(array $payload)
     {
-        if ($user = $this->getUserByStripeId($payload['data']['object']['id'])) {
-            $user->updateCardFromStripe();
+        //$stripeId = $payload['data']['object']['id'];
+        try {
+            app(UserController::class)->updateFromStripe($payload);
+            return new Response('Webhook Handled', 200);
+        } catch (Exception $e) {
+            return new Response($e->getMessage(),500);
         }
 
-        return new Response('Webhook Handled', 200);
     }
 
     /**
@@ -154,18 +238,17 @@ class StripeWebhookController extends Controller
      */
     protected function handleCustomerDeleted(array $payload)
     {
-        $user = $this->getUserByStripeId($payload['data']['object']['id']);
+        $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['id']);
 
         if ($user) {
             $user->subscriptions->each(function (Subscription $subscription) {
-                $subscription->skipTrial()->markAsCancelled();
+                // marcamos el status de la subscription como cancelada
+                app(SubscriptionController::class)->cancellSubscription($subscription);
             });
 
             $user->forceFill([
                 'stripe_id' => null,
                 'trial_ends_at' => null,
-                'card_brand' => null,
-                'card_last_four' => null,
             ])->save();
         }
 
@@ -178,12 +261,12 @@ class StripeWebhookController extends Controller
      * @param  string  $stripeId
      * @return \Laravel\Cashier\Billable
      */
-    protected function getUserByStripeId($stripeId)
-    {
-        $model = Cashier::stripeModel();
+    // protected function getUserByStripeId($stripeId)
+    // {
+    //     $model = Cashier::stripeModel();
 
-        return (new $model)->where('stripe_id', $stripeId)->first();
-    }
+    //     return (new $model)->where('stripe_id', $stripeId)->first();
+    // }
 
     /**
      * Handle calls to missing methods on the controller.
@@ -204,21 +287,27 @@ class StripeWebhookController extends Controller
      */
     protected function handleInvoicePaymentSucceeded(array $payload)
     {
-        try {
-        $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
-        if($user->subscribed())
-        {
-            return response('Webhook Handled', 200);
-        }
-        $subscriptionId = $payload['data']['object']['id'];
-        app(SubscriptionController::class)->store($user->id,$subscriptionId);
+        // try {
+        // $user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']);
+        // if($user->subscribed())
+        // {
+        //     return response('Webhook Handled', 200);
+        // }
+        // $subscriptionId = $payload['data']['object']['id'];
+        // app(SubscriptionController::class)->store($user->id,$subscriptionId);
         return response('Webhook Handled', 200);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => $e
-            ],500);
-        }
+        // } catch (Exception $e) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'error' => $e
+        //     ],500);
+        // }
     }
+
+    protected function newSubscriptionType(array $payload)
+    {
+        return 'default';
+    }
+
 
 }
