@@ -221,7 +221,7 @@ class UserController extends Controller
         try {
             // obtener al usuario autenticado
             $userId = auth()->user()->id;
-            $user = User::find($userId)->firstOrFail();
+            $user = User::find($userId);
             // if(!$user)
             // {
             //     throw new Exception("User not authenticated", 1);

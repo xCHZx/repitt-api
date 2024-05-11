@@ -20,7 +20,7 @@ class SubscriptionController extends Controller
             'anual' => env('PRICE_ID_YEARLY')
         ];
         $customer = auth()->user()->stripe_id;
-        $email = auth()->user()->email;
+        //$email = auth()->user()->email;
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
         $YOUR_DOMAIN = 'http://localhost:4242';
 
