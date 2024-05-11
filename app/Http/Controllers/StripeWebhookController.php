@@ -190,7 +190,7 @@ class StripeWebhookController extends Controller
             $user->subscriptions->filter(function ($subscription) use ($payload) {
                 return $subscription->stripe_id === $payload['data']['object']['id'];
             })->each(function ($subscription) {
-                $subscription->markAsCanceled();
+                app(SubscriptionController::class)->cancellSubscription($subscription);
             });
         }
 
@@ -243,14 +243,12 @@ class StripeWebhookController extends Controller
         if ($user) {
             $user->subscriptions->each(function (Subscription $subscription) {
                 // marcamos el status de la subscription como cancelada
-                $subscription->skipTrial()->markAsCancelled();
+                app(SubscriptionController::class)->cancellSubscription($subscription);
             });
 
             $user->forceFill([
                 'stripe_id' => null,
                 'trial_ends_at' => null,
-                'card_brand' => null,
-                'card_last_four' => null,
             ])->save();
         }
 

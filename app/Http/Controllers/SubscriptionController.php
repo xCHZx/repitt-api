@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Laravel\Cashier\Subscription;
+use Stripe\Subscription as StripeSubscription;
 
 class SubscriptionController extends Controller
 {
@@ -18,6 +20,7 @@ class SubscriptionController extends Controller
             'anual' => env('PRICE_ID_YEARLY')
         ];
         $customer = auth()->user()->stripe_id;
+        $email = auth()->user()->email;
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
         $YOUR_DOMAIN = 'http://localhost:4242';
 
@@ -72,5 +75,14 @@ class SubscriptionController extends Controller
         }
 
     }
+
+    public function cancellSubscription($subscription)
+    {
+        $subscription->stripe_status = StripeSubscription::STATUS_CANCELED;
+        $subscription->ends_at = Carbon::now();
+        $subscription->save();
+
+    }
+
 
 }
