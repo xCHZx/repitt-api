@@ -206,12 +206,14 @@ class StripeWebhookController extends Controller
     protected function handlecustomerupdated(array $payload)
     {
         //$stripeId = $payload['data']['object']['id'];
-        try {
-            app(UserController::class)->updateFromStripe($payload);
-            return new Response('Webhook Handled', 200);
-        } catch (Exception $e) {
-            return new Response($e->getMessage(),500);
-        }
+        // try {
+        //     app(UserController::class)->updateFromStripe($payload);
+        //     return new Response('Webhook Handled', 200);
+        // } catch (Exception $e) {
+        //     return new Response($e->getMessage(),500);
+        // }
+
+        return new Response('webhook handled ',200);
 
     }
 
