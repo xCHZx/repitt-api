@@ -264,7 +264,11 @@ class StampCardController extends Controller
                 $query->where('user_id', $userId);
             }])->withCount(['visits' => function($query) use ($userId) {
                 $query->where('user_id', $userId);
-            }])->find($stampCardId);
+            }])
+            ->with(['users' => function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->find($stampCardId);
 
             if (! $stampCard){
                 return response()->json(
@@ -274,6 +278,12 @@ class StampCardController extends Controller
                     ],404
                 );
             }
+
+            $userStampCard = $stampCard->users->first()->pivot;
+
+            // Add user_stamp_card to the stampCard object
+            $stampCard->user_stamp_card = $userStampCard;
+
             return response()->json(
                 [
                     'status' => 'success',

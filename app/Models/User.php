@@ -73,4 +73,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Visit::class);
     }
+
+    public function stamp_cards(): BelongsToMany
+    {
+        return $this->belongsToMany(StampCard::class, 'user_stamp_cards')
+                    ->withPivot('visits_count', 'is_active', 'is_reward_redeemed')
+                    ->withTimestamps();
+    }
 }

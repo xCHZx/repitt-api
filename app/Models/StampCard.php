@@ -37,5 +37,11 @@ class StampCard extends Model
         return $this->belongsTo(Business::class);
     }
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'user_stamp_cards')
+                    ->withPivot('visits_count', 'is_active', 'is_reward_redeemed')
+                    ->withTimestamps();
+    }
 
 }

@@ -32,10 +32,13 @@ class VisitController extends Controller
 
         try{
 
+
+
             $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
 
             // $user = User::find($request->user_id);
             $user = User::where('repitt_code', $request->user_repitt_code)->first();
+
 
             //get the user's visits for the stamp card
             $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
@@ -47,7 +50,7 @@ class VisitController extends Controller
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => ['Visit unsuccesful']
+                        'message' => [$stampCard->business_id]
                     ], 400
                 );
             }
@@ -59,11 +62,26 @@ class VisitController extends Controller
                 $visit = new Visit();
                 $visit->user()->associate($user);
                 $stampCard->visits()->save($visit);
+
+                // Retrieve the StampCard instance associated with the user
+                $userStampCard = $user->stamp_cards()->where('stamp_card_id', $request->stamp_card_id)->first();
+
+                // Check if the user has the stamp card
+                if (!$userStampCard) {
+                    // It's the first visit, create a user_stamp_card
+                    $user->stamp_cards()->attach($request->stamp_card_id, ['visits_count' => 1, 'is_active' => true, 'is_reward_redeemed' => false]);
+                } else {
+                    // It's not the first visit, increment the visitsCount
+                    $userStampCard->pivot->visits_count += 1;
+                    $userStampCard->pivot->save();
+                }
+
                 return response()->json(
                     [
                         'status' => 'success',
                         'data' => [
-                            $visit
+                            'visit' => $visit,
+                            'user_stamp_card' => $userStampCard,
                         ]
                     ], 201
                 );
@@ -75,11 +93,25 @@ class VisitController extends Controller
                     $visit = new Visit();
                     $visit->user()->associate($user);
                     $stampCard->visits()->save($visit);
+
+                    // Retrieve the StampCard instance associated with the user
+                    $userStampCard = $user->stamp_cards()->where('stamp_card_id', $request->stamp_card_id)->first();
+
+                    // Check if the user has the stamp card
+                    if (!$userStampCard) {
+                        // It's the first visit, create a user_stamp_card
+                        $user->stamp_cards()->attach($request->stamp_card_id, ['visits_count' => 1, 'is_active' => true, 'is_reward_redeemed' => false]);
+                    } else {
+                        // It's not the first visit, increment the visitsCount
+                        $userStampCard->pivot->visits_count += 1;
+                        $userStampCard->pivot->save();
+                    }
                     return response()->json(
                         [
                             'status' => 'success',
                             'data' => [
-                                $visit
+                                'visit' => $visit,
+                                'user_stamp_card' => $userStampCard,
                             ]
                         ], 201
                     );
