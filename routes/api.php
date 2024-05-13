@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\MetricController;
 use App\Http\Controllers\StampCardController;
 use App\Http\Controllers\StripeWebhookController;
 use App\Http\Controllers\SubscriptionController;
@@ -70,6 +71,11 @@ Route::prefix('company')->group(function () {
             Route::get('stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCurrentCompany'])->name('visit.getAllByStampCardAsCurrentCompany');
             Route::get('business/{id}/logged-user', [VisitController::class, 'getAllByBusinessAsCurrentCompany'])->name('visit.getAllByBusinessAsCurrentCompany');
 
+        });
+
+        //Métricas
+        Route::prefix('metric')->group(function () {
+            Route::post('/global', [MetricController::class, 'getGlobalMetrics'])->name('metric.getGlobalMetrics');
         });
     });
 

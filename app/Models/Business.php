@@ -50,4 +50,16 @@ class Business extends Model
         return $this->belongsTo(Segment::class);
     }
 
+    public function user_stamp_cards(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            UserStampCard::class,
+            StampCard::class,
+            'business_id', // Foreign key on StampCard table...
+            'stamp_card_id', // Foreign key on UserStampCard table...
+            'id', // Local key on businesses table...
+            'id' // Local key on stamp_cards table...
+        );
+    }
+
 }
