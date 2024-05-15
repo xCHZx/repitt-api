@@ -88,6 +88,11 @@ class StripeWebhookController extends Controller
                 $subscription = app(SubscriptionController::class)->store(
                     $user,$type,$stripeId,$stripeStatus,$stripePrice,$quantity,$trialEndsAt
                 );
+                if($subscription->stripe_status == 'active')
+                {
+                    $user->assignRole('Owner');
+                    $user->save();
+                }
                 app(SubscriptionController::class)->storeItems($subscription,$data);
             }
 
