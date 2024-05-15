@@ -121,6 +121,12 @@ Route::prefix('utils')->group(function () {
     Route::prefix('segments')->group(function () {
         Route::get('/', [SegmentController::class, 'getAllSegments'])->name('segment.getAllSegments');
     });
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::prefix('refresh')->group(function () {
+            Route::get('/user-data', [UserController::class, 'refreshUserData'])->name('refresh.userData');
+        });
+    });
 });
 
 

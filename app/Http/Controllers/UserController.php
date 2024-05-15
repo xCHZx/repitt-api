@@ -285,4 +285,26 @@ class UserController extends Controller
             return $e;
         }
     }
+
+    public function refreshUserData()
+    {
+        try {
+            $user = auth()->user();
+            $subscriptionStatus = $user->subscribed('default');
+
+
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User data refreshed successfully',
+                'data' => $user,
+                'isSubscribed' => $subscriptionStatus
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => [$e->getMessage()]
+            ], 400);
+        }
+    }
 }

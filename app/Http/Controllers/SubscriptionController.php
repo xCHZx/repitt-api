@@ -31,8 +31,8 @@ class SubscriptionController extends Controller
               'quantity' => 1,
             ]],
             'mode' => 'subscription',
-            'success_url' => $YOUR_DOMAIN . '/planes/gracias',
-            'cancel_url' => $YOUR_DOMAIN . '/planes/cancelado',
+            'success_url' => $YOUR_DOMAIN . '/visitante/planes/gracias',
+            'cancel_url' => $YOUR_DOMAIN . '/',
         ]);
 
         $response = response()->json($checkout_session->url);
