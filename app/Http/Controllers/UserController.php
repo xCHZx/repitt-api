@@ -298,7 +298,9 @@ class UserController extends Controller
                 'status' => 'success',
                 'message' => 'User data refreshed successfully',
                 'data' => $user,
-                'isSubscribed' => $subscriptionStatus
+                'isSubscribed' => $subscriptionStatus,
+                'role' => $user->getRoleNames()->first()
+
             ], 200);
         } catch (Exception $e) {
             return response()->json([

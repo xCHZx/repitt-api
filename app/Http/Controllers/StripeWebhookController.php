@@ -88,12 +88,14 @@ class StripeWebhookController extends Controller
                 $subscription = app(SubscriptionController::class)->store(
                     $user,$type,$stripeId,$stripeStatus,$stripePrice,$quantity,$trialEndsAt
                 );
-                if($subscription->stripe_status == 'active')
-                {
+
+                app(SubscriptionController::class)->storeItems($subscription,$data);
+
+
+
                     $user->assignRole('Owner');
                     $user->save();
-                }
-                app(SubscriptionController::class)->storeItems($subscription,$data);
+
             }
 
             // Terminate the billable's generic trial if it exists...

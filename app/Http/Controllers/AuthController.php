@@ -108,6 +108,8 @@ class AuthController extends Controller
                     'last_name' => $user->last_name,
                     'email' => $user->email,
                     'repitt_code' => $user->repitt_code,
+                    'subscription' => $user->subscriptions
+
                 ]
             ],
             200
