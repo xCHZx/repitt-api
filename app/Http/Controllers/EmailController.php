@@ -32,13 +32,13 @@ class EmailController extends Controller
     public function sendPasswordRecoveryEmail($encryptedToken,$userEmail,$userName)
     {
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("admin@medik.mx", "Rafael Payns");
+        $email->setFrom("no-reply@repitt.com", "Repitt");
         $email->setSubject("Recupera tu Contraseña");
         $email->addTo($userEmail, $userName);
         $email->addContent(
             "text/html",
             "<p> Hola ".$userName." te enviamos este correo porque solicitaste recuperar tu contraseña </p>
-            <p> Da clic a este enlaze para recuperar tu contraseña : ".getenv('APP_URL')."/api/recoverPassword/".$encryptedToken."</p>
+            <p> Da clic a este enlaze para recuperar tu contraseña : ".getenv('FRONT_URL')."/auth/recuperar-contrasena/".$encryptedToken."</p>
             <p> si no fuiste tu el que solicito recupérar la contraseña ignora este correo </p>"
         );
         $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));

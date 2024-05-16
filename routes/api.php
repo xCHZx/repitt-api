@@ -16,9 +16,8 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
-Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
 Route::post('/stripe-webhook', [StripeWebhookController::class,'handlewebhook'])->name('webhook');
+Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
 
 
 Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
@@ -27,7 +26,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
     Route::post('/dual-register', [AuthController::class, 'dualRegister'])->name('auth.dualRegister');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-    Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
+    Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
+    Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
 
 
     Route::middleware(['auth:sanctum'])->group(function () {

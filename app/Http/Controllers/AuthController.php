@@ -274,7 +274,7 @@ class AuthController extends Controller
                     'status' => 'error',
                     'message' => [$e->getMessage()]
                 ],
-                401
+                404
             );
         }
 
