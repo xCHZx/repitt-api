@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\AccountDetails;
 use Exception;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
@@ -53,6 +54,7 @@ class UserController extends Controller
         // $user->save();
 
         $this->generateQr($repittCode);
+        $this->storeAccountDetails($user->id);
 
 
         return $user;
@@ -308,5 +310,14 @@ class UserController extends Controller
                 'message' => [$e->getMessage()]
             ], 400);
         }
+    }
+
+    private function storeAccountDetails($userId)
+    {
+        $accountDetails = new AccountDetails();
+        $accountDetails->user_id = $userId;
+        $accountDetails->locations_limit = 1;
+        $accountDetails->cards_limit = 0;
+        $accountDetails->save();
     }
 }

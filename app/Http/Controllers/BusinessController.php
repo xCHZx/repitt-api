@@ -54,9 +54,23 @@ class BusinessController extends Controller
                     'status' => 'error',
                     'message' => ['Unauthorized']
                 ],
+                401
+            );
+        }
+        // validate that user can store businesses
+        $userBusinesses = auth()->user()->businesses;
+        if ($userBusinesses->isNotEmpty()) {
+            $userAccountDetails = auth()->user()->account_details;
+            if ($userAccountDetails->locations_limit >= count($userBusinesses)) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Unauthorized']
+                    ],
                     401
                 );
             }
+        }
 
         $rules = [
             'name' => 'required|string|max:100',
@@ -85,16 +99,13 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
-            if(!$request->logo_file)
-            {
+            if (!$request->logo_file) {
                 $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
                 //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
-            }
-            else
-            {
+            } else {
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
-                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
+                $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
 
             }
             $business->save();
@@ -130,9 +141,9 @@ class BusinessController extends Controller
                     'status' => 'error',
                     'message' => ['Unauthorized']
                 ],
-                    401
-                );
-            }
+                401
+            );
+        }
 
         $rules = [
             'name' => 'required|string|max:100',
@@ -161,16 +172,13 @@ class BusinessController extends Controller
             $business->phone = $request["phone"];
             $business->opening_hours = $request["opening_hours"];
             $business->segment_id = $request["segment"];
-            if(!$request->logo_file)
-            {
+            if (!$request->logo_file) {
                 $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
                 //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
-            }
-            else
-            {
+            } else {
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
-                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
+                $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
 
             }
             $business->save();
@@ -199,16 +207,16 @@ class BusinessController extends Controller
     public function updateByCurrentCompany(Request $request, $id)
     {
 
-                // Validate if the user is an owner
+        // Validate if the user is an owner
         if (!auth()->user()->hasRole('Owner')) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => ['Unauthorized']
                 ],
-                    401
-                );
-            }
+                401
+            );
+        }
 
         $rules = [
             'name' => 'required|string|max:100',
@@ -243,11 +251,10 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment;
-            if($request->logo_file)
-            {
+            if ($request->logo_file) {
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
-                $business->logo_path = asset('storage/business/images/logo/'.$file->hashName());
+                $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
             }
             $business->save();
             return response()->json(
@@ -271,21 +278,23 @@ class BusinessController extends Controller
         }
     }
 
-    public function getVisitedByCurrentUser(){
-        try{
-            $res = auth()->user()->businesses()->whereHas('stamp_cards', function($query){
-                $query->whereHas('visits', function($query){
+    public function getVisitedByCurrentUser()
+    {
+        try {
+            $res = auth()->user()->businesses()->whereHas('stamp_cards', function ($query) {
+                $query->whereHas('visits', function ($query) {
                     $query->where('user_id', auth()->id());
                 });
             })->get();
 
 
-            if (! $res or $res->isEmpty()){
+            if (!$res or $res->isEmpty()) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -294,28 +303,32 @@ class BusinessController extends Controller
                     'data' => [
                         $res
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],404
+                ],
+                404
             );
         }
     }
 
-    public function getAllByCurrentCompany(){
-        try{
+    public function getAllByCurrentCompany()
+    {
+        try {
             $res = auth()->user()->businesses()->with('segment')->get();
-            if (! $res or $res->isEmpty()){
+            if (!$res or $res->isEmpty()) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -324,29 +337,33 @@ class BusinessController extends Controller
                     'data' => [
                         $res
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch
-        (Exception $e){
+        } catch
+        (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],404
+                ],
+                404
             );
         }
     }
 
-    public function getByIdByCurrentCompany($id){
-        try{
+    public function getByIdByCurrentCompany($id)
+    {
+        try {
             $res = auth()->user()->businesses()->with('segment')->find($id);
-            if (! $res){
+            if (!$res) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -355,23 +372,25 @@ class BusinessController extends Controller
                     'data' => [
                         $res
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch
-        (Exception $e){
+        } catch
+        (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],404
+                ],
+                404
             );
         }
     }
 
     private function SaveLogo($logo)
     {
-        Storage::disk('public')->put('business/images/logo/',$logo);
+        Storage::disk('public')->put('business/images/logo/', $logo);
 
     }
 }
