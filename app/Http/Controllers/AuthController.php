@@ -256,7 +256,7 @@ class AuthController extends Controller
 
             }
             $userToken = rand(10000, 90000);
-            Cache::add('userToken:' . $userToken, $user->id, now()->addMinutes(5));
+            Cache::add('userToken:' . $userToken, $user->id, now()->addMinutes(30));
             $encryptedToken = Crypt::encrypt($userToken);
 
             app(EmailController::class)->sendPasswordRecoveryEmail($encryptedToken, $user->email, $user->first_name);

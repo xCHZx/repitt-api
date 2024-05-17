@@ -32,7 +32,7 @@ class EmailController extends Controller
     public function sendPasswordRecoveryEmail($encryptedToken,$userEmail,$userName)
     {
         $email = new \SendGrid\Mail\Mail();
-        $email->setFrom("no-reply@repitt.com", "Repitt");
+        $email->setFrom("admin@repitt.com", "Repitt");
         $email->setSubject("Recupera tu Contraseña");
         $email->addTo($userEmail, $userName);
         $email->addContent(
