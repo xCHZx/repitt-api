@@ -421,8 +421,36 @@ class BusinessController extends Controller
             );
         }
     }
+    public function unpublish($id)
+    {
+        // validar que el usuario tenga ese negocio  
+        try {
+            if(!auth()->user()->businesses->find($id))
+            {// -- si no lo tiene retornar un mensaje de no autorizado
+                throw new Exception('no se encontro el negocio que buscas',1);
+            }
+            // editar status
+            $business = Business::find($id);
+            $business->is_active = 0;
+            $business->save();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => ['el negocio ya no se encuentra publico']
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
+        }
 
-
+    }
     private function SaveLogo($logo)
     {
         Storage::disk('public')->put('business/images/logo/', $logo);

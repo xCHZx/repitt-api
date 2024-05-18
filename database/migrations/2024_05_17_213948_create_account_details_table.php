@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('account_details', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->tinyInteger('locations_limit')->default(1);
+            $table->tinyInteger('locations_limit')->default(0);
             $table->tinyInteger('stamp_cards_limit')->default(0);
             $table->timestamps();
         });

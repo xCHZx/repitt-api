@@ -51,6 +51,7 @@ Route::prefix('company')->group(function () {
             Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
             Route::post('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
             Route::post('/publish/{id}',[BusinessController::class,'publish'])->name('business.publish');
+            Route::post('/unpublish/{id}',[BusinessController::class,'unpublish'])->name('business.unpublish');
             Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
             Route::get('/{id}/logged-user', [BusinessController::class, 'getByIdByCurrentCompany'])->name('business.getByIdByCurrentCompany');
 
