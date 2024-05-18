@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->integer('segment_id');
             $table->string('opening_hours')->nullable();
+            $table->boolean('is_active')->default(0);
             $table->string('hashed_id')->nullable();
             $table->string('logo_path')->nullable();
             $table->string('qr_path')->nullable();

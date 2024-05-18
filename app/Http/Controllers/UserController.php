@@ -316,8 +316,8 @@ class UserController extends Controller
     {
         $accountDetails = new AccountDetails();
         $accountDetails->user_id = $userId;
-        $accountDetails->locations_limit = 1;
-        $accountDetails->cards_limit = 0;
+        $accountDetails->locations_limit = 0; // negocios que puede tener activos
+        $accountDetails->stamp_cards_limit = 0; // stampcards que puede tener activas
         $accountDetails->save();
     }
 }

@@ -57,20 +57,6 @@ class BusinessController extends Controller
                 401
             );
         }
-        // validate that user can store businesses
-        $userBusinesses = auth()->user()->businesses;
-        if ($userBusinesses->isNotEmpty()) {
-            $userAccountDetails = auth()->user()->account_details;
-            if ($userAccountDetails->locations_limit >= count($userBusinesses)) {
-                return response()->json(
-                    [
-                        'status' => 'error',
-                        'message' => ['Unauthorized']
-                    ],
-                    401
-                );
-            }
-        }
 
         $rules = [
             'name' => 'required|string|max:100',
@@ -88,6 +74,7 @@ class BusinessController extends Controller
                 400
             );
         }
+
         try {
 
             // return($request->logo_file);
@@ -387,6 +374,54 @@ class BusinessController extends Controller
             );
         }
     }
+
+    public function publish($id)
+    {
+        try {
+            // validar que el usuario esta suscrito
+            if(!auth()->user()->subscribed('default'))
+            {
+                throw new Exception("Necesitas una suscripcion para realizar esta accion", 1);
+            }
+            // validar que el usuario pueda publicar negocios
+            $activeBusinesses = auth()->user()->businesses->where('is_active',1);
+            $userAccountDetails = auth()->user()->account_details;
+            // si usuario ya tiene negocios activos ver que no pase del limite
+            if($activeBusinesses->isNotEmpty())
+            {
+                if($userAccountDetails->locations_limit >= count($activeBusinesses))
+                {
+                    throw new Exception("No puedes publicar mas negocios", 1); 
+                }
+            }
+            else{// si no tiene negocios activos, ver que el limite sea mayor a 0
+                if($userAccountDetails->locations_limit == 0)
+                {
+                    throw new Exception("No puedes publicar ningun negocio", 1);
+                }
+            }
+            // publicar negocio
+            $business = Business::find($id);
+            $business->is_active = 1;
+            $business->save();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => ['negocio publicado con exito']
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                403
+            );
+        }
+    }
+
 
     private function SaveLogo($logo)
     {
