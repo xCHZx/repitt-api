@@ -415,9 +415,9 @@ class StampCardController extends Controller
             }
             //obtener stamps activas y limite que el user puede activar
             $businessesIds = auth()->user()->businesses->pluck('id');
-            $activeStamps = StampCard::whereIn('business_id',$businessesIds)
-                                       ->where('is_active',1)
-                                       ->get();
+            $activeStamps = StampCard::whereIn('business_id', $businessesIds)
+                ->where('is_active', 1)
+                ->get();
             $userStampsLimit = auth()->user()->account_details->stamp_cards_limit;
             // verificar si tiene cards activas
             if ($activeStamps->isNotEmpty()) {
@@ -456,6 +456,43 @@ class StampCardController extends Controller
                 403
             );
         }
+    }
+    public function unpublish($id)
+    {
+        // validar que el usuario es Owner
+        if (!auth()->user()->hasRole('Owner')) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => ['Unauthorized Role']
+                ],
+                401
+            );
+        }
+        try {
+            // validar que el usuario tiene el stamp que quiere despublicar
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
+            if (!$stampCard) {
+                throw new Exception("no se encontro la stampcard requerida",1);
+            }
+            // desactivar el stamp
+            $stampCard->is_active = 0;
+            $stampCard->save();
+            return response()->json([
+                'status' => 'success',
+                'message' => ['la stampcard ya no se encuentra publica']
+            ],200);
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                403
+            );
+        }
+
     }
 
     private function saveIcon($stamp_icon)
