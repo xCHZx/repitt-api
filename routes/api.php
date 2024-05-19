@@ -60,6 +60,7 @@ Route::prefix('company')->group(function () {
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
+            Route::post('/publish/{id}',[StampCardController::class,'publish'])->name('stampcard.publish');
             Route::post('/{id}/logged-user', [StampCardController::class, 'updateByIdAsCurrentCompany'])->name('stampcard.updateByIdAsCurrentCompany');
             Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
             Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');

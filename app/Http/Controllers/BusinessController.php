@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Models\Segment;
+use App\Models\StampCard;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -389,7 +390,7 @@ class BusinessController extends Controller
             // si usuario ya tiene negocios activos ver que no pase del limite
             if($activeBusinesses->isNotEmpty())
             {
-                if($userAccountDetails->locations_limit >= count($activeBusinesses))
+                if($userAccountDetails->locations_limit <= count($activeBusinesses))
                 {
                     throw new Exception("No puedes publicar mas negocios", 1); 
                 }
@@ -433,6 +434,15 @@ class BusinessController extends Controller
             $business = Business::find($id);
             $business->is_active = 0;
             $business->save();
+            // verificar si tiene stampcards activas
+            $aciveStampCards = $business->stamp_cards()->where('is_active',1)->get();
+            if($aciveStampCards->isNotEmpty())
+            {
+                // si tiene ,desactivarlas
+                StampCard::where('business_id',$business->id)
+                           ->where('is_active',1)
+                           ->update(['is_active' => 0]);
+            }
             return response()->json(
                 [
                     'status' => 'success',

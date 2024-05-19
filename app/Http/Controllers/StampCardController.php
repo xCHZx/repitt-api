@@ -19,9 +19,9 @@ class StampCardController extends Controller
                     'status' => 'error',
                     'message' => 'Unauthorized Role'
                 ],
-                    401
-                );
-            }
+                401
+            );
+        }
 
         $rules = [
             'name' => 'required|string',
@@ -40,7 +40,8 @@ class StampCardController extends Controller
                 [
                     'status' => 'error',
                     'message' => $validator->errors()->all()
-                ], 400
+                ],
+                400
             );
         }
 
@@ -55,15 +56,12 @@ class StampCardController extends Controller
             // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
             $stampCard->reward = $request->reward;
-            if(!$request->stamp_icon_file)
-            {
+            if (!$request->stamp_icon_file) {
                 $stampCard->stamp_icon_path = asset('storage/placeholders/icon-placeholder.png');
-            }
-            else
-            {
+            } else {
                 $file = $request->file('stamp_icon_file');
                 $this->saveIcon($file);
-                $stampCard->stamp_icon_path = asset('storage/business/images/icons/'.$file->hashName());
+                $stampCard->stamp_icon_path = asset('storage/business/images/icons/' . $file->hashName());
 
             }
             $stampCard->save();
@@ -74,7 +72,8 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCard
                     ]
-                ], 201
+                ],
+                201
             );
         } catch (Exception $e) {
             return $e;
@@ -82,16 +81,17 @@ class StampCardController extends Controller
 
     }
 
-    public function updateByIdAsCurrentCompany(Request $request, $id){
+    public function updateByIdAsCurrentCompany(Request $request, $id)
+    {
         if (!auth()->user()->hasRole('Owner')) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => ['Unauthorized Role']
                 ],
-                    401
-                );
-            }
+                401
+            );
+        }
 
         $rules = [
             'name' => 'required|string',
@@ -111,7 +111,8 @@ class StampCardController extends Controller
                 [
                     'status' => 'error',
                     'message' => $validator->errors()->all()
-                ], 400
+                ],
+                400
             );
         }
 
@@ -119,12 +120,13 @@ class StampCardController extends Controller
             //Verify if the StampCard exists in the current business collection of the user
             $businessesIds = auth()->user()->businesses->pluck('id');
             $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
-            if (! $stampCard){
+            if (!$stampCard) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             $stampCard->name = $request->name;
@@ -134,11 +136,10 @@ class StampCardController extends Controller
             // $stampCard->end_date = $request->end_date;
             // $stampCard->business_id = $request->business_id;
             // $stampCard->reward = $request->reward;
-            if($request->hasFile('stamp_icon_file'))
-            {
+            if ($request->hasFile('stamp_icon_file')) {
                 $file = $request->file('stamp_icon_file');
                 $this->saveIcon($file);
-                $stampCard->stamp_icon_path = asset('storage/business/images/icons/'.$file->hashName());
+                $stampCard->stamp_icon_path = asset('storage/business/images/icons/' . $file->hashName());
             }
             $stampCard->save();
 
@@ -148,46 +149,52 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCard
                     ]
-                ], 201
+                ],
+                201
             );
         } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ], 400
+                ],
+                400
             );
         }
     }
 
     public function getAllByIdByCurrentCompany($businessId)
     {
-        try{
+        try {
             $userId = auth()->user()->id;
             //Validate if the businessId belongs to a business of the current user
             $business = auth()->user()->businesses->where('id', $businessId)->first();
-            if (! $business){
+            if (!$business) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
 
-            $stampCards = StampCard::where('business_id', $businessId)->with(['business' => function($query) {
-                $query->select('id', 'name');
-            }])->get();
+            $stampCards = StampCard::where('business_id', $businessId)->with([
+                'business' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ])->get();
 
 
 
 
-            if (! $stampCards or $stampCards->isEmpty()){
+            if (!$stampCards or $stampCards->isEmpty()) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -196,41 +203,50 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCards
                     ]
-                ],200
+                ],
+                200
             );
-        }
-        catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],400
+                ],
+                400
             );
         }
     }
 
     public function getAllByCurrentVisitor() //Used
     {
-        try{
+        try {
             $userId = auth()->user()->id;
 
-            $stampCards = StampCard::whereHas('visits', function($query) use ($userId){
+            $stampCards = StampCard::whereHas('visits', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-            })->with(['business' => function($query) {
-                $query->select('id', 'name', 'logo_path','segment_id');
-            }, 'business.segment'])->with(['visits' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])->withCount(['visits' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])->get();
+            })->with([
+                    'business' => function ($query) {
+                        $query->select('id', 'name', 'logo_path', 'segment_id');
+                    },
+                    'business.segment'
+                ])->with([
+                    'visits' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    }
+                ])->withCount([
+                    'visits' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    }
+                ])->get();
 
 
-            if (! $stampCards or $stampCards->isEmpty()){
+            if (!$stampCards or $stampCards->isEmpty()) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['There are no StampCards']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -239,43 +255,55 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCards
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],400
+                ],
+                400
             );
         }
     }
 
     public function getByIdAsVisitor($stampCardId) //Used
     {
-        try{
+        try {
             $userId = auth()->user()->id;
-            $stampCard = StampCard::whereHas('visits', function($query) use ($userId){
+            $stampCard = StampCard::whereHas('visits', function ($query) use ($userId) {
                 $query->where('user_id', $userId);
-            })->with(['business' => function($query) {
-                $query->select('id', 'name', 'logo_path','segment_id');
-            }, 'business.segment'])->with(['visits' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])->withCount(['visits' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->with(['users' => function($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->find($stampCardId);
+            })->with([
+                    'business' => function ($query) {
+                        $query->select('id', 'name', 'logo_path', 'segment_id');
+                    },
+                    'business.segment'
+                ])->with([
+                    'visits' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    }
+                ])->withCount([
+                    'visits' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    }
+                ])
+                ->with([
+                    'users' => function ($query) use ($userId) {
+                        $query->where('user_id', $userId);
+                    }
+                ])
+                ->find($stampCardId);
 
-            if (! $stampCard){
+            if (!$stampCard) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
 
@@ -290,36 +318,42 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCard
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],400
+                ],
+                400
             );
         }
     }
 
-    public function getByIdAsCurrentCompany($stampCardId){
-        try{
+    public function getByIdAsCurrentCompany($stampCardId)
+    {
+        try {
             //Get the StampCard by stampCardId, the business_id of the StampCard must belong to the current business collection of the user
             $businessesIds = auth()->user()->businesses->pluck('id');
             $stampCard = StampCard::whereIn('business_id', $businessesIds)
                 ->withCount('visits')
-                ->with(['business' => function($query) {
-                    $query->select('id', 'name', 'logo_path');
-                }])
+                ->with([
+                    'business' => function ($query) {
+                        $query->select('id', 'name', 'logo_path');
+                    }
+                ])
                 ->find($stampCardId);
 
-            if (! $stampCard){
+            if (!$stampCard) {
                 return response()->json(
                     [
                         'status' => 'error',
                         'message' => ['Resource not found']
-                    ],404
+                    ],
+                    404
                 );
             }
             return response()->json(
@@ -328,46 +362,104 @@ class StampCardController extends Controller
                     'data' => [
                         $stampCard
                     ]
-                ],200
+                ],
+                200
             );
 
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],400
+                ],
+                400
             );
         }
     }
 
-    public function getAllByCurrentCompany(){
-        try{
+    public function getAllByCurrentCompany()
+    {
+        try {
             $businessesIds = auth()->user()->businesses->pluck('id');
-            $stampCards = StampCard::whereIn('business_id', $businessesIds)->with(['business' => function($query) {
-                $query->select('id', 'name');
-            }])->get();
+            $stampCards = StampCard::whereIn('business_id', $businessesIds)->with([
+                'business' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ])->get();
             return response()->json(
                 [
                     'status' => 'success',
                     'data' => [
                         $stampCards
                     ]
-                ],200
+                ],
+                200
             );
-        }
-        catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],400
+                ],
+                400
+            );
+        }
+    }
+
+    public function publish($id)
+    {
+        //validar que estas suscrito
+        try {
+            if (!auth()->user()->subscribed()) {
+                throw new Exception("Necesitas una suscripcion para realizar esta accion");
+            }
+            //obtener stamps activas y limite que el user puede activar
+            $businessesIds = auth()->user()->businesses->pluck('id');
+            $activeStamps = StampCard::whereIn('business_id',$businessesIds)
+                                       ->where('is_active',1)
+                                       ->get();
+            $userStampsLimit = auth()->user()->account_details->stamp_cards_limit;
+            // verificar si tiene cards activas
+            if ($activeStamps->isNotEmpty()) {
+                //si tiene verificar que no haya pasado del limite o este en el limite
+                if ($userStampsLimit <= count($activeStamps)) {
+                    throw new Exception("No puedes publicar mas stamps", 1);
+                }
+            } else {
+                //si no tiene cards activas verificar que su limite no sea 0
+                if ($userStampsLimit == 0) {
+                    throw new Exception("No puedes publicar stamps", 1);
+                }
+            }
+            // encontrar stamp y validar que pertence a un negocio activo
+            $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
+            if (!$stampCard->business->is_active) {
+                throw new Exception("No puedes publicar esta stamp, publica el negocio al que pertenece antes", 1);
+
+            }
+            //publicar stampcard
+            $stampCard->is_active = 1;
+            $stampCard->save();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => ['Stampcard publicada con exito']
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                403
             );
         }
     }
 
     private function saveIcon($stamp_icon)
     {
-        Storage::disk('public')->put('business/images/icons/',$stamp_icon);
+        Storage::disk('public')->put('business/images/icons/', $stamp_icon);
     }
 }
