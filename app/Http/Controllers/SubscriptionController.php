@@ -33,6 +33,7 @@ class SubscriptionController extends Controller
             'mode' => 'subscription',
             'success_url' => $YOUR_DOMAIN . '/visitante/planes/gracias',
             'cancel_url' => $YOUR_DOMAIN . '/',
+            'allow_promotion_codes' => true
         ]);
 
         $response = response()->json($checkout_session->url);

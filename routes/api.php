@@ -50,8 +50,8 @@ Route::prefix('company')->group(function () {
         Route::prefix('business')->group(function () {
             Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
             Route::post('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
-            Route::post('/publish/{id}',[BusinessController::class,'publish'])->name('business.publish');
-            Route::post('/unpublish/{id}',[BusinessController::class,'unpublish'])->name('business.unpublish');
+            Route::post('/{id}/publish',[BusinessController::class,'publish'])->name('business.publish');
+            Route::post('/{id}/unpublish',[BusinessController::class,'unpublish'])->name('business.unpublish');
             Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
             Route::get('/{id}/logged-user', [BusinessController::class, 'getByIdByCurrentCompany'])->name('business.getByIdByCurrentCompany');
 
@@ -60,8 +60,8 @@ Route::prefix('company')->group(function () {
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
-            Route::post('/publish/{id}',[StampCardController::class,'publish'])->name('stampcard.publish');
-            Route::post('/unpublish/{id}',[StampCardController::class,'unpublish'])->name('stampcard.unpublish');
+            Route::post('/{id}/publish',[StampCardController::class,'publish'])->name('stampcard.publish');
+            Route::post('/{id}/unpublish',[StampCardController::class,'unpublish'])->name('stampcard.unpublish');
             Route::post('/{id}/logged-user', [StampCardController::class, 'updateByIdAsCurrentCompany'])->name('stampcard.updateByIdAsCurrentCompany');
             Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
             Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');

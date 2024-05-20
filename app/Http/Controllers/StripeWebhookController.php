@@ -164,11 +164,13 @@ class StripeWebhookController extends Controller
             //cambiar account details
             if($subscription->stripe_status == 'active' || $subscription->stripe_status == 'trialing')
             {
+                // aqui va validacion incremental
                 app(UserController::class)->updateAccountDetails($user->id,1,2);
             }
             else
             {
                 app(UserController::class)->updateAccountDetails($user->id,0,0);
+                // encontrar negocios de un usuario y despublicarlos
                 
             }
 

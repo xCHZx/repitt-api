@@ -394,7 +394,7 @@ class BusinessController extends Controller
                 {
                     throw new Exception("No puedes publicar mas negocios", 1); 
                 }
-            }
+            }// cambiar a elseif
             else{// si no tiene negocios activos, ver que el limite sea mayor a 0
                 if($userAccountDetails->locations_limit == 0)
                 {
