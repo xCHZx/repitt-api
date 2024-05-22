@@ -380,24 +380,20 @@ class BusinessController extends Controller
     {
         try {
             // validar que el usuario esta suscrito
-            if(!auth()->user()->subscribed('default'))
-            {
+            if (!auth()->user()->subscribed('default')) {
                 throw new Exception("Necesitas una suscripcion para realizar esta accion", 1);
             }
             // validar que el usuario pueda publicar negocios
-            $activeBusinesses = auth()->user()->businesses->where('is_active',1);
+            $activeBusinesses = auth()->user()->businesses->where('is_active', 1);
             $userAccountDetails = auth()->user()->account_details;
             // si usuario ya tiene negocios activos ver que no pase del limite
-            if($activeBusinesses->isNotEmpty())
-            {
-                if($userAccountDetails->locations_limit <= count($activeBusinesses))
-                {
-                    throw new Exception("No puedes publicar mas negocios", 1); 
+            if ($activeBusinesses->isNotEmpty()) {
+                if ($userAccountDetails->locations_limit <= count($activeBusinesses)) {
+                    throw new Exception("No puedes publicar mas negocios", 1);
                 }
-            }// cambiar a elseif
-            else{// si no tiene negocios activos, ver que el limite sea mayor a 0
-                if($userAccountDetails->locations_limit == 0)
-                {
+            } // cambiar a elseif
+            else { // si no tiene negocios activos, ver que el limite sea mayor a 0
+                if ($userAccountDetails->locations_limit == 0) {
                     throw new Exception("No puedes publicar ningun negocio", 1);
                 }
             }
@@ -426,22 +422,20 @@ class BusinessController extends Controller
     {
         // validar que el usuario tenga ese negocio  
         try {
-            if(!auth()->user()->businesses->find($id))
-            {// -- si no lo tiene retornar un mensaje de no autorizado
-                throw new Exception('no se encontro el negocio que buscas',1);
+            if (!auth()->user()->businesses->find($id)) { // -- si no lo tiene retornar un mensaje de no autorizado
+                throw new Exception('no se encontro el negocio que buscas', 1);
             }
             // editar status
             $business = Business::find($id);
             $business->is_active = 0;
             $business->save();
             // verificar si tiene stampcards activas
-            $aciveStampCards = $business->stamp_cards()->where('is_active',1)->get();
-            if($aciveStampCards->isNotEmpty())
-            {
+            $aciveStampCards = $business->stamp_cards()->where('is_active', 1)->get();
+            if ($aciveStampCards->isNotEmpty()) {
                 // si tiene ,desactivarlas
-                StampCard::where('business_id',$business->id)
-                           ->where('is_active',1)
-                           ->update(['is_active' => 0]);
+                StampCard::where('business_id', $business->id)
+                    ->where('is_active', 1)
+                    ->update(['is_active' => 0]);
             }
             return response()->json(
                 [
@@ -458,6 +452,32 @@ class BusinessController extends Controller
                 ],
                 404
             );
+        }
+
+    }
+
+    public function unpublishByStripe($user)
+    {
+        try {
+            // obtengo los ids de los negocios que el usuario tiene activos
+            $activeBusinesses = $user->businesses()->where('is_active', 1)->pluck('id');
+            foreach ($activeBusinesses as $businessId) {
+                // editar status
+                $business = Business::find($businessId);
+                $business->is_active = 0;
+                $business->save();
+                // verificar si tiene stampcards activas
+                $aciveStampCards = $business->stamp_cards()->where('is_active', 1)->get();
+                if ($aciveStampCards->isNotEmpty()) {
+                    // si tiene ,desactivarlas
+                    StampCard::where('business_id', $business->id)
+                        ->where('is_active', 1)
+                        ->update(['is_active' => 0]); 
+                }
+
+            }  
+        } catch (Exception $e) {
+            return $e->getMessage();
         }
 
     }
