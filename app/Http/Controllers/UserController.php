@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\AccountDetails;
 use Exception;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
@@ -53,6 +54,7 @@ class UserController extends Controller
         // $user->save();
 
         $this->generateQr($repittCode);
+        $this->storeAccountDetails($user->id);
 
 
         return $user;
@@ -130,7 +132,8 @@ class UserController extends Controller
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],403
+                ],
+                403
             );
         }
     }
@@ -269,9 +272,8 @@ class UserController extends Controller
     public function updateFromStripe($payload)
     {
         try {
-            $user = User::where('stripe_id',$payload['data']['object']['id'])->first();
-            if(!$user)
-            {
+            $user = User::where('stripe_id', $payload['data']['object']['id'])->first();
+            if (!$user) {
                 throw new Exception("no hay usuario", 1);
             }
             $user->email = $payload['data']['object']['email'];
@@ -308,5 +310,22 @@ class UserController extends Controller
                 'message' => [$e->getMessage()]
             ], 400);
         }
+    }
+
+    private function storeAccountDetails($userId)
+    {
+        $accountDetails = new AccountDetails();
+        $accountDetails->user_id = $userId;
+        // $accountDetails->locations_limit = 0; // negocios que puede tener activos
+        // $accountDetails->stamp_cards_limit = 0; // stampcards que puede tener activas
+        $accountDetails->save();
+    }
+
+    public function updateAccountDetails($userId, $locations_limit, $stamp_cards_limit)
+    {
+        AccountDetails::where('user_id',$userId)
+                      ->update([
+                          'locations_limit' => $locations_limit,
+                          'stamp_cards_limit' => $stamp_cards_limit]);
     }
 }

@@ -198,7 +198,6 @@ class AuthController extends Controller
 
             if (!$verificationCode) {
                 throw new Exception("This user does not have a verification code, or  your code may have expired", 1);
-
             }
 
             if ($verificationCode == $request->verification_code) {

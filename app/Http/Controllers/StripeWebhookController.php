@@ -90,6 +90,8 @@ class StripeWebhookController extends Controller
                 );
 
                 app(SubscriptionController::class)->storeItems($subscription,$data);
+                
+               
 
 
 
@@ -126,7 +128,7 @@ class StripeWebhookController extends Controller
 
             $firstItem = $data['items']['data'][0];
             $isSinglePrice = count($data['items']['data']) === 1;
-
+            
             // Price...
             $subscription->stripe_price = $isSinglePrice ? $firstItem['price']['id'] : null;
 
@@ -159,6 +161,18 @@ class StripeWebhookController extends Controller
             }
 
             $subscription->save();
+            //cambiar account details
+            if($subscription->stripe_status == 'active' || $subscription->stripe_status == 'trialing')
+            {
+                // aqui va validacion incremental
+                app(UserController::class)->updateAccountDetails($user->id,1,2);
+            }
+            else
+            {
+                app(UserController::class)->updateAccountDetails($user->id,0,0);
+                // encontrar negocios de un usuario y despublicarlos
+                
+            }
 
             // Update subscription items...
             if (isset($data['items'])) {
@@ -179,6 +193,8 @@ class StripeWebhookController extends Controller
                 // Delete items that aren't attached to the subscription anymore...
                 $subscription->items()->whereNotIn('stripe_id', $subscriptionItemIds)->delete();
             }
+
+            
         }
         return new Response('Webhook Handled', 200);
     }

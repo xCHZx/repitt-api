@@ -15,6 +15,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Cashier\Billable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -79,5 +80,10 @@ class User extends Authenticatable
         return $this->belongsToMany(StampCard::class, 'user_stamp_cards')
                     ->withPivot('visits_count', 'is_active', 'is_reward_redeemed')
                     ->withTimestamps();
+    }
+
+    public function account_details(): HasOne
+    {
+        return $this->hasOne(AccountDetails::class,'user_id');
     }
 }

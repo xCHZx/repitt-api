@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedBigInteger('business_id');
             $table->string('reward');
             $table->boolean('is_completed')->default(false);
+            $table->boolean('is_active')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });
