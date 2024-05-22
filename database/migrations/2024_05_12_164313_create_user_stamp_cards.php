@@ -19,7 +19,9 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->boolean('is_completed')->default(false);
             $table->boolean('is_reward_redeemed')->default(false);
+            $table->string('qr_path')->nullable();
             $table->timestamp('completed_at')->nullable();
+            $table->timestamp('redeemed_at')->nullable();
             $table->timestamps();
         });
     }
