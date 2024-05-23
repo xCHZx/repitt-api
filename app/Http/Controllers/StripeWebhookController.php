@@ -205,6 +205,27 @@ class StripeWebhookController extends Controller
         return new Response('Webhook Handled', 200);
     }
 
+    protected function handleCustomerSubscriptionPaused(array $payload)
+    {
+        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
+        {
+             // modificar los limites de negocios y stamps publicos
+             app(UserController::class)->updateAccountDetails($user->id, 0, 0);
+             // despublicar los negocios
+             app(BusinessController::class)->unpublishByStripe($user);
+        }
+        return new Response('Webhook Handled', 200);
+    }
+
+    protected function handleCustomerSubscriptionResumed(array $payload)
+    {
+        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
+        {
+            app(UserController::class)->updateAccountDetails($user->id, 1, 2);
+        }
+        return new Response('Webhook Handled', 200);
+    }
+
     /**
      * Handle a cancelled customer from a Stripe subscription.
      *

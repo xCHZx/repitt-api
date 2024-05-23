@@ -38,7 +38,7 @@ class SubscriptionController extends Controller
             'cancel_url' => $YOUR_DOMAIN . '/',
             'allow_promotion_codes' => true,
             'subscription_data' => [
-                'trial_settings' => ['end_behavior' => ['missing_payment_method' => 'cancel']],
+                'trial_settings' => ['end_behavior' => ['missing_payment_method' => 'pause']],
                 'trial_period_days' => 15
             ],
             'payment_method_collection' => 'if_required'
