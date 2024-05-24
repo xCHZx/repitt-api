@@ -34,7 +34,7 @@ class VisitController extends Controller
 
 
 
-            $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
+            $userBusinessesIds = auth()->user()->businesses->where('is_active',1)->pluck('id')->toArray();
 
             // $user = User::find($request->user_id);
             $user = User::where('repitt_code', $request->user_repitt_code)->first();
