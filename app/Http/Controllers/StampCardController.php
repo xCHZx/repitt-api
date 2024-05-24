@@ -223,7 +223,7 @@ class StampCardController extends Controller
             $userId = auth()->user()->id;
 
             $stampCards = StampCard::whereHas('visits', function ($query) use ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId)->where('is_active',1);
             })->with([
                     'business' => function ($query) {
                         $query->select('id', 'name', 'logo_path', 'segment_id');
