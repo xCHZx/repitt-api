@@ -45,12 +45,21 @@ class VisitController extends Controller
 
 
             $stampCard = StampCard::find($request->stamp_card_id);
+            if(!$stampCard->is_active)
+            {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Esta tarjeta no esta activa']
+                    ], 400
+                );  
+            }
             //Check if the stampCard business is the same as the user's business
             if (!in_array($stampCard->business_id, $userBusinessesIds)) {
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => [$stampCard->business_id]
+                        'message' => ['El negocio no existe o no se encuentra activo']
                     ], 400
                 );
             }
