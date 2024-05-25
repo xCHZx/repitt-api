@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 
 class StampCardController extends Controller
 {
-    public function storeAsCompany(Request $request)
+    public function createStampCardAsCompany(Request $request)
     {
         //Verificar si el usuario tiene el rol Owner
         if (!auth()->user()->hasRole('Owner')) {
@@ -81,7 +81,7 @@ class StampCardController extends Controller
 
     }
 
-    public function updateByIdAsCurrentCompany(Request $request, $id)
+    public function updateStampCardByIdAsCurrentCompany(Request $request, $id)
     {
         if (!auth()->user()->hasRole('Owner')) {
             return response()->json(
@@ -163,7 +163,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getAllByIdByCurrentCompany($businessId)
+    public function getAllStampCardsByBusinessIdAsCurrentCompany($businessId)
     {
         try {
             $userId = auth()->user()->id;
@@ -217,7 +217,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getAllByCurrentVisitor() //Used
+    public function getAllStampCardsByCurrentVisitor() //Used
     {
         try {
             $userId = auth()->user()->id;
@@ -270,7 +270,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getByIdAsVisitor($stampCardId) //Used
+    public function getStampCardByIdAsVisitor($stampCardId) //Used
     {
         try {
             $userId = auth()->user()->id;
@@ -333,7 +333,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getByIdAsCurrentCompany($stampCardId)
+    public function getStampCardByIdAsCurrentCompany($stampCardId)
     {
         try {
             //Get the StampCard by stampCardId, the business_id of the StampCard must belong to the current business collection of the user
@@ -377,7 +377,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function getAllByCurrentCompany()
+    public function getAllStampCardsAsCurrentCompany()
     {
         try {
             $businessesIds = auth()->user()->businesses->pluck('id');
@@ -406,7 +406,7 @@ class StampCardController extends Controller
         }
     }
 
-    public function publish($id)
+    public function publishStampCard($id)
     {
         //validar que estas suscrito
         try {
@@ -457,7 +457,7 @@ class StampCardController extends Controller
             );
         }
     }
-    public function unpublish($id)
+    public function unpublishStampCard($id)
     {
         // validar que el usuario es Owner
         if (!auth()->user()->hasRole('Owner')) {

@@ -16,65 +16,52 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::post('/stripe-webhook', [StripeWebhookController::class,'handlewebhook'])->name('webhook');
-Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
-
-
-Route::post('update', [UserController::class,'update'])->name('user.update')->middleware(['auth:sanctum']);
 //Auth Routes
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
-    Route::post('/dual-register', [AuthController::class, 'dualRegister'])->name('auth.dualRegister');
     Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
-    Route::post('/sendpasswordrecoverymail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
+    Route::post('/send-password-recovery-mail',[AuthController::class,'sendPasswordRecoveryMail'])->name('sendpasswordrecoveryMail');
     Route::post('/password-recover', [AuthController::class, 'recoverPassword'])->name('password-recover');
 
 
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
-        Route::post('sendverifyemail', [AuthController::class , 'sendverifyEmail'])->name('auth.sendEmail');
-        Route::post('verifyemail', [AuthController::class , 'verifyEmail'])->name('auth.verifyEmail');
-        Route::post('updatepassword', [UserController::class,'updatePassword'])->name('user.updatePassword');
+        Route::post('/send-verify-email', [AuthController::class , 'sendverifyEmail'])->name('auth.sendEmail');
+        Route::post('/verify-email', [AuthController::class , 'verifyEmail'])->name('auth.verifyEmail');
+        Route::post('/update-password', [UserController::class,'updatePassword'])->name('user.updatePassword');
     });
 });
 
-Route::post('/subscription-checkout',[SubscriptionController::class,'checkout'])->name('checkout')->middleware(['auth:sanctum']);
-Route::get('/billing-portal',[UserController::class,'createCustomerPortalSession'])->name('user.billing-portal')->middleware(['auth:sanctum']);
-Route::get('/checksuscription',[UserController::class,'hello'])->name('hello')->middleware(['auth:sanctum']);
+
 //Company Profiles Routes
 Route::prefix('company')->group(function () {
-
     Route::middleware(['auth:sanctum'])->group(function () {
-
         //Negocio
         Route::prefix('business')->group(function () {
-            Route::post('/', [BusinessController::class, 'storeAsCompany'])->name('business.storeAsCompany'); //Falta validar por company profile
-            Route::post('/{id}/logged-user', [BusinessController::class, 'updateByCurrentCompany'])->name('business.updateByCurrentCompany');
-            Route::post('/{id}/publish',[BusinessController::class,'publish'])->name('business.publish');
-            Route::post('/{id}/unpublish',[BusinessController::class,'unpublish'])->name('business.unpublish');
-            Route::get('/logged-user', [BusinessController::class, 'getAllByCurrentCompany'])->name('business.getAllByCurrentCompany');
-            Route::get('/{id}/logged-user', [BusinessController::class, 'getByIdByCurrentCompany'])->name('business.getByIdByCurrentCompany');
-
+            Route::post('/', [BusinessController::class, 'createBusinessAsCompany'])->name('business.createBusinessAsCompany');
+            Route::post('/{id}/logged-user', [BusinessController::class, 'updateBusinessAsCurrentCompany'])->name('business.updateBusinessAsCurrentCompany');
+            Route::post('/{id}/publish',[BusinessController::class,'publishBusiness'])->name('business.publishBusiness');
+            Route::post('/{id}/unpublish',[BusinessController::class,'unpublishBusiness'])->name('business.unpublishBusiness');
+            Route::get('/logged-user', [BusinessController::class, 'getAllBusinessAsCurrentCompany'])->name('business.getAllBusinessAsCurrentCompany');
+            Route::get('/{id}/logged-user', [BusinessController::class, 'getBusinessByIdAsCurrentCompany'])->name('business.getBusinessByIdAsCurrentCompany');
         });
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
-            Route::post('/', [StampCardController::class, 'storeAsCompany'])->name('stampcard.storeAsCompany');
-            Route::post('/{id}/publish',[StampCardController::class,'publish'])->name('stampcard.publish');
-            Route::post('/{id}/unpublish',[StampCardController::class,'unpublish'])->name('stampcard.unpublish');
-            Route::post('/{id}/logged-user', [StampCardController::class, 'updateByIdAsCurrentCompany'])->name('stampcard.updateByIdAsCurrentCompany');
-            Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentCompany'])->name('stampcard.getAllByCurrentCompany');
-            Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllByIdByCurrentCompany'])->name('stampcard.getAllByIdByCurrentCompany');
-            Route::get('/{id}/logged-user', [StampCardController::class, 'getByIdAsCurrentCompany'])->name('stampcard.getByIdByCurrentCompany');
-
+            Route::post('/', [StampCardController::class, 'createStampCardAsCompany'])->name('stampcard.createStampCardAsCompany');
+            Route::post('/{id}/publish',[StampCardController::class,'publishStampCard'])->name('stampcard.publishStampCard');
+            Route::post('/{id}/unpublish',[StampCardController::class,'unpublishStampCard'])->name('stampcard.unpublishStampCard');
+            Route::post('/{id}/logged-user', [StampCardController::class, 'updateStampCardByIdAsCurrentCompany'])->name('stampcard.updateStampCardByIdAsCurrentCompany');
+            Route::get('/logged-user', [StampCardController::class, 'getAllStampCardsAsCurrentCompany'])->name('stampcard.getAllStampCardsAsCurrentCompany');
+            Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllStampCardsByBusinessIdAsCurrentCompany');
+            Route::get('/{id}/logged-user', [StampCardController::class, 'getStampCardByIdAsCurrentCompany'])->name('stampcard.getStampCardByIdAsCurrentCompany');
         });
 
         //Visitas
         Route::prefix('visit')->group(function () {
-            Route::post('/', [VisitController::class, 'storeAsCompany'])->name('visit.storeAsCompany');
-            Route::get('stampcard/{id}/logged-user', [VisitController::class, 'getAllByStampCardAsCurrentCompany'])->name('visit.getAllByStampCardAsCurrentCompany');
-            Route::get('business/{id}/logged-user', [VisitController::class, 'getAllByBusinessAsCurrentCompany'])->name('visit.getAllByBusinessAsCurrentCompany');
-
+            Route::post('/', [VisitController::class, 'registerVisitAsCompany'])->name('visit.registerVisitAsCompany');
+            Route::get('stampcard/{id}/logged-user', [VisitController::class, 'getAllVisitsByStampCardIdAsCurrentCompany'])->name('visit.getAllVisitsByStampCardIdAsCurrentCompany');
+            Route::get('business/{id}/logged-user', [VisitController::class, 'getAllVisitsByBusinessIdAsCurrentCompany'])->name('visit.getAllVisitsByBusinessIdAsCurrentCompany');
         });
 
         //Métricas
@@ -82,14 +69,10 @@ Route::prefix('company')->group(function () {
             Route::post('/global', [MetricController::class, 'getGlobalMetrics'])->name('metric.getGlobalMetrics');
         });
     });
-
-
-
 });
 
 //Visitor Profiles Routes
 Route::prefix('visitor')->group(function () {
-
     Route::middleware(['auth:sanctum'])->group(function () {
         //Negocios
         Route::prefix('business')->group(function () {
@@ -98,25 +81,24 @@ Route::prefix('visitor')->group(function () {
 
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
-            Route::get('/logged-user', [StampCardController::class, 'getAllByCurrentVisitor'])->name('stampcard.getAllByCurrentVisitor');
-            Route::get('/{id}', [StampCardController::class, 'getByIdAsVisitor'])->name('business.getByIdAsVisitor');
+            Route::get('/logged-user', [StampCardController::class, 'getAllStampCardsByCurrentVisitor'])->name('stampcard.getAllStampCardsByCurrentVisitor');
+            Route::get('/{id}', [StampCardController::class, 'getStampCardByIdAsVisitor'])->name('business.getStampCardByIdAsVisitor');
         });
 
         Route::prefix('visit')->group(function () {
-        Route::get('/logged-user', [VisitController::class, 'getAllByCurrentVisitor'])->name('visit.getAllByCurrentVisitor');
+        Route::get('/logged-user', [VisitController::class, 'getAllVisitsAsCurrentVisitor'])->name('visit.getAllVisitsAsCurrentVisitor');
         });
 
         Route::prefix('user')->group(function () {
             Route::get('/logged-user', [UserController::class, 'getCurrentVisitorData'])->name('user.getCurrentVisitorData');
         });
-
     });
-
 });
 
 Route::prefix('subscription')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/checkout',[SubscriptionController::class,'checkout'])->name('subscription.checkout');
+        Route::get('/billing-portal',[UserController::class,'createCustomerPortalSession'])->name('user.billing-portal');
     });
 });
 
@@ -134,3 +116,5 @@ Route::prefix('utils')->group(function () {
 });
 
 
+//Others
+Route::post('/stripe-webhook', [StripeWebhookController::class,'handlewebhook'])->name('webhook');

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 
 class VisitController extends Controller
 {
-    public function storeAsCompany(Request $request)
+    public function registerVisitAsCompany(Request $request)
     {
         $rules = [
             'stamp_card_id' => 'required|integer',
@@ -136,7 +136,7 @@ class VisitController extends Controller
     }
 
 
-    public function getAllByCurrentVisitor() //used
+    public function getAllVisitsAsCurrentVisitor() //used
     {
         try{
             $userId = auth()->user()->id;
@@ -172,7 +172,7 @@ class VisitController extends Controller
     }
 
 
-    public function getAllByStampCardAsCurrentCompany($id)
+    public function getAllVisitsByStampCardIdAsCurrentCompany($id)
     {
         try{
             $stampCard = StampCard::find($id);
@@ -224,7 +224,7 @@ class VisitController extends Controller
         }
     }
 
-    public function getAllByBusinessAsCurrentCompany($id)
+    public function getAllVisitsByBusinessIdAsCurrentCompany($id)
     {
         try{
             $business = Business::find($id);

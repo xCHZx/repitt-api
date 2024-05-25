@@ -46,7 +46,7 @@ class BusinessController extends Controller
         }
     }
 
-    public function storeAsCompany(Request $request)
+    public function createBusinessAsCompany(Request $request)
     {
         // Validate if the user is an owner
         if (!auth()->user()->hasRole('Owner')) {
@@ -192,7 +192,7 @@ class BusinessController extends Controller
         }
     }
 
-    public function updateByCurrentCompany(Request $request, $id)
+    public function updateBusinessAsCurrentCompany(Request $request, $id)
     {
 
         // Validate if the user is an owner
@@ -306,7 +306,7 @@ class BusinessController extends Controller
         }
     }
 
-    public function getAllByCurrentCompany()
+    public function getAllBusinessAsCurrentCompany()
     {
         try {
             $res = auth()->user()->businesses()->with('segment')->get();
@@ -341,7 +341,7 @@ class BusinessController extends Controller
         }
     }
 
-    public function getByIdByCurrentCompany($id)
+    public function getBusinessByIdAsCurrentCompany($id)
     {
         try {
             $res = auth()->user()->businesses()->with('segment')->find($id);
@@ -376,7 +376,7 @@ class BusinessController extends Controller
         }
     }
 
-    public function publish($id)
+    public function publishBusiness($id)
     {
         try {
             // validar que el usuario esta suscrito
@@ -392,7 +392,7 @@ class BusinessController extends Controller
             {
                 if($userAccountDetails->locations_limit <= count($activeBusinesses))
                 {
-                    throw new Exception("No puedes publicar mas negocios", 1); 
+                    throw new Exception("No puedes publicar mas negocios", 1);
                 }
             }// cambiar a elseif
             else{// si no tiene negocios activos, ver que el limite sea mayor a 0
@@ -408,6 +408,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'success',
+                    'data' => $business,
                     'message' => ['negocio publicado con exito']
                 ],
                 200
@@ -422,9 +423,9 @@ class BusinessController extends Controller
             );
         }
     }
-    public function unpublish($id)
+    public function unpublishBusiness($id)
     {
-        // validar que el usuario tenga ese negocio  
+        // validar que el usuario tenga ese negocio
         try {
             if(!auth()->user()->businesses->find($id))
             {// -- si no lo tiene retornar un mensaje de no autorizado
