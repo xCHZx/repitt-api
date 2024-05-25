@@ -49,7 +49,7 @@ class StripeWebhookController extends Controller
     public function handleWebhook(Request $request)
     {
         $payload = json_decode($request->getContent(), true);
-        $method = 'handle'.Str::studly(str_replace('.', '_', $payload['type']));
+        $method = 'handle' . Str::studly(str_replace('.', '_', $payload['type']));
 
         if (method_exists($this, $method)) {
             return $this->{$method}($payload);
@@ -70,7 +70,7 @@ class StripeWebhookController extends Controller
         if ($user) {
             $data = $payload['data']['object'];
 
-            if (! $user->subscriptions->contains('stripe_id', $data['id'])) {
+            if (!$user->subscriptions->contains('stripe_id', $data['id'])) {
                 if (isset($data['trial_end'])) {
                     $trialEndsAt = Carbon::createFromTimestamp($data['trial_end']);
                 } else {
@@ -86,22 +86,28 @@ class StripeWebhookController extends Controller
                 $stripePrice = $isSinglePrice ? $firstItem['price']['id'] : null;
                 $quantity = $isSinglePrice && isset($firstItem['quantity']) ? $firstItem['quantity'] : null;
                 $subscription = app(SubscriptionController::class)->store(
-                    $user,$type,$stripeId,$stripeStatus,$stripePrice,$quantity,$trialEndsAt
+                    $user,
+                    $type,
+                    $stripeId,
+                    $stripeStatus,
+                    $stripePrice,
+                    $quantity,
+                    $trialEndsAt
                 );
 
-                app(SubscriptionController::class)->storeItems($subscription,$data);
-                
-               
+                app(SubscriptionController::class)->storeItems($subscription, $data);
+                if ($subscription->stripe_status == 'active' || $subscription->stripe_status == 'trialing') {
+                    // aqui va validacion incremental
+                    app(UserController::class)->updateAccountDetails($user->id, 1, 2);
+                }
 
-
-
-                    $user->assignRole('Owner');
-                    $user->save();
+                $user->assignRole('Owner');
+                $user->save();
 
             }
 
             // Terminate the billable's generic trial if it exists...
-            if (! is_null($user->trial_ends_at)) {
+            if (!is_null($user->trial_ends_at)) {
                 $user->update(['trial_ends_at' => null]);
             }
         }
@@ -128,7 +134,7 @@ class StripeWebhookController extends Controller
 
             $firstItem = $data['items']['data'][0];
             $isSinglePrice = count($data['items']['data']) === 1;
-            
+
             // Price...
             $subscription->stripe_price = $isSinglePrice ? $firstItem['price']['id'] : null;
 
@@ -139,7 +145,7 @@ class StripeWebhookController extends Controller
             if (isset($data['trial_end'])) {
                 $trialEnd = Carbon::createFromTimestamp($data['trial_end']);
 
-                if (! $subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
+                if (!$subscription->trial_ends_at || $subscription->trial_ends_at->ne($trialEnd)) {
                     $subscription->trial_ends_at = $trialEnd;
                 }
             }
@@ -162,16 +168,16 @@ class StripeWebhookController extends Controller
 
             $subscription->save();
             //cambiar account details
-            if($subscription->stripe_status == 'active' || $subscription->stripe_status == 'trialing')
-            {
+            if ($subscription->stripe_status == 'active' || $subscription->stripe_status == 'trialing') {
                 // aqui va validacion incremental
-                app(UserController::class)->updateAccountDetails($user->id,1,2);
-            }
-            else
-            {
-                app(UserController::class)->updateAccountDetails($user->id,0,0);
-                // encontrar negocios de un usuario y despublicarlos
-                
+                app(UserController::class)->updateAccountDetails($user->id, 1, 2);
+            } else {
+                // modificar los limites de negocios y stamps publicos
+                app(UserController::class)->updateAccountDetails($user->id, 0, 0);
+                // despublicar los negocios
+                app(BusinessController::class)->unpublishByStripe($user);
+
+
             }
 
             // Update subscription items...
@@ -184,17 +190,38 @@ class StripeWebhookController extends Controller
                     $subscription->items()->updateOrCreate([
                         'stripe_id' => $item['id'],
                     ], [
-                        'stripe_product' => $item['price']['product'],
-                        'stripe_price' => $item['price']['id'],
-                        'quantity' => $item['quantity'] ?? null,
-                    ]);
+                            'stripe_product' => $item['price']['product'],
+                            'stripe_price' => $item['price']['id'],
+                            'quantity' => $item['quantity'] ?? null,
+                        ]);
                 }
 
                 // Delete items that aren't attached to the subscription anymore...
                 $subscription->items()->whereNotIn('stripe_id', $subscriptionItemIds)->delete();
             }
 
-            
+
+        }
+        return new Response('Webhook Handled', 200);
+    }
+
+    protected function handleCustomerSubscriptionPaused(array $payload)
+    {
+        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
+        {
+             // modificar los limites de negocios y stamps publicos
+             app(UserController::class)->updateAccountDetails($user->id, 0, 0);
+             // despublicar los negocios
+             app(BusinessController::class)->unpublishByStripe($user);
+        }
+        return new Response('Webhook Handled', 200);
+    }
+
+    protected function handleCustomerSubscriptionResumed(array $payload)
+    {
+        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
+        {
+            app(UserController::class)->updateAccountDetails($user->id, 1, 2);
         }
         return new Response('Webhook Handled', 200);
     }
@@ -215,6 +242,12 @@ class StripeWebhookController extends Controller
             })->each(function ($subscription) {
                 app(SubscriptionController::class)->cancellSubscription($subscription);
             });
+
+            // modificar los limites de negocios y stamps publicos
+            app(UserController::class)->updateAccountDetails($user->id, 0, 0);
+            // despublicar los negocios
+            app(BusinessController::class)->unpublishByStripe($user);
+
         }
 
         return new Response('Webhook Handled', 200);
@@ -236,7 +269,7 @@ class StripeWebhookController extends Controller
         //     return new Response($e->getMessage(),500);
         // }
 
-        return new Response('webhook handled ',200);
+        return new Response('webhook handled ', 200);
 
     }
 
