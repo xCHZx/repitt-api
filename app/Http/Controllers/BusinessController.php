@@ -460,23 +460,12 @@ class BusinessController extends Controller
     public function unpublishByStripe($user)
     {
         try {
-            // obtengo los ids de los negocios que el usuario tiene activos
-            $activeBusinesses = $user->businesses()->where('is_active', 1)->pluck('id');
-            foreach ($activeBusinesses as $businessId) {
-                // editar status
-                $business = Business::find($businessId);
-                $business->is_active = 0;
-                $business->save();
-                // verificar si tiene stampcards activas
-                $aciveStampCards = $business->stamp_cards()->where('is_active', 1)->get();
-                if ($aciveStampCards->isNotEmpty()) {
-                    // si tiene ,desactivarlas
-                    StampCard::where('business_id', $business->id)
-                        ->where('is_active', 1)
-                        ->update(['is_active' => 0]);
-                }
-
-            }
+            $businessesIds = $user->businesses->where('is_active',1)->pluck('id');
+            if($businessesIds->isNotEmpty())
+            {
+                Business::whereIn('id',$businessesIds)->update(['is_active' => 0]);
+                StampCard::whereIn('business_id', $businessesIds)->update(['is_active' => 0]);
+            }      
         } catch (Exception $e) {
             return $e->getMessage();
         }

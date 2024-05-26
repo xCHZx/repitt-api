@@ -207,20 +207,22 @@ class StripeWebhookController extends Controller
 
     protected function handleCustomerSubscriptionPaused(array $payload)
     {
-        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
-        {
-             // modificar los limites de negocios y stamps publicos
-             app(UserController::class)->updateAccountDetails($user->id, 0, 0);
-             // despublicar los negocios
-             app(BusinessController::class)->unpublishByStripe($user);
+        if ($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer'])) {
+            try {
+                // modificar los limites de negocios y stamps publicos
+                app(UserController::class)->updateAccountDetails($user->id, 0, 0);
+                // despublicar los negocios
+                app(BusinessController::class)->unpublishByStripe($user);
+            } catch (Exception $e) {
+                return new Response($e->getMessage(),500);
+            }
         }
         return new Response('Webhook Handled', 200);
     }
 
     protected function handleCustomerSubscriptionResumed(array $payload)
     {
-        if($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer']))
-        {
+        if ($user = app(UserController::class)->getUserByStripeId($payload['data']['object']['customer'])) {
             app(UserController::class)->updateAccountDetails($user->id, 1, 2);
         }
         return new Response('Webhook Handled', 200);
