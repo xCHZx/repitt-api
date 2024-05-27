@@ -31,17 +31,23 @@ class VisitController extends Controller
         }
 
         try{
-
-
-
             $userBusinessesIds = auth()->user()->businesses->where('is_active',1)->pluck('id')->toArray();
 
             // $user = User::find($request->user_id);
             $user = User::where('repitt_code', $request->user_repitt_code)->first();
 
+            if (!$user){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['El usuario no existe']
+                    ], 400
+                );
+            }
 
             //get the user's visits for the stamp card
             $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
+
 
 
             $stampCard = StampCard::find($request->stamp_card_id);
@@ -52,7 +58,7 @@ class VisitController extends Controller
                         'status' => 'error',
                         'message' => ['Esta tarjeta no esta activa']
                     ], 400
-                );  
+                );
             }
             //Check if the stampCard business is the same as the user's business
             if (!in_array($stampCard->business_id, $userBusinessesIds)) {

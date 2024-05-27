@@ -54,6 +54,7 @@ Route::prefix('company')->group(function () {
             Route::post('/{id}/logged-user', [StampCardController::class, 'updateStampCardByIdAsCurrentCompany'])->name('stampcard.updateStampCardByIdAsCurrentCompany');
             Route::get('/logged-user', [StampCardController::class, 'getAllStampCardsAsCurrentCompany'])->name('stampcard.getAllStampCardsAsCurrentCompany');
             Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllStampCardsByBusinessIdAsCurrentCompany');
+            Route::get('/business/{id}/active/logged-user', [StampCardController::class, 'getAllActiveStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllActiveStampCardsByBusinessIdAsCurrentCompany');
             Route::get('/{id}/logged-user', [StampCardController::class, 'getStampCardByIdAsCurrentCompany'])->name('stampcard.getStampCardByIdAsCurrentCompany');
         });
 

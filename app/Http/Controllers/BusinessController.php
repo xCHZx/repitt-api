@@ -431,6 +431,7 @@ class BusinessController extends Controller
             return response()->json(
                 [
                     'status' => 'success',
+                    'data' => $business,
                     'message' => ['el negocio ya no se encuentra publico']
                 ],
                 200
