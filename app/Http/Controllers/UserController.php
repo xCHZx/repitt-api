@@ -245,6 +245,7 @@ class UserController extends Controller
         //     );
         // }
         try {
+            $YOUR_DOMAIN = env('FRONT_URL');
             // obtener al usuario autenticado
             $userId = auth()->user()->id;
             $user = User::find($userId);
@@ -261,7 +262,7 @@ class UserController extends Controller
             $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));
             return $stripe->billingPortal->sessions->create([
                 'customer' => $user->stripe_id,
-                'return_url' => 'https://example.com/account',
+                'return_url' => $YOUR_DOMAIN . '/',
             ]);
         } catch (Exception $e) {
             return $e->getMessage();

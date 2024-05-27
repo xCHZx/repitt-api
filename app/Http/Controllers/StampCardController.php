@@ -217,6 +217,59 @@ class StampCardController extends Controller
         }
     }
 
+    public function getAllActiveStampCardsByBusinessIdAsCurrentCompany($businessId)
+    {
+        try {
+            $userId = auth()->user()->id;
+            //Validate if the businessId belongs to a business of the current user
+            $business = auth()->user()->businesses->where('id', $businessId)->first();
+            if (!$business) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Resource not found']
+                    ],
+                    404
+                );
+            }
+
+            $stampCards = StampCard::where('business_id', $businessId)
+                ->where('is_active', 1)
+                ->with([
+                    'business' => function ($query) {
+                        $query->select('id', 'name');
+                    }
+                ])->get();
+
+            if (!$stampCards or $stampCards->isEmpty()) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Resource not found']
+                    ],
+                    404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        $stampCards
+                    ]
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                400
+            );
+        }
+    }
+
     public function getAllStampCardsByCurrentVisitor() //Used
     {
         try {
