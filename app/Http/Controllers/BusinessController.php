@@ -70,8 +70,7 @@ class BusinessController extends Controller
                 [
                     'status' => 'error',
                     'message' => $validator->errors()->all()
-                ]
-                ,
+                ],
                 400
             );
         }
@@ -94,7 +93,6 @@ class BusinessController extends Controller
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
                 $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
-
             }
             $business->save();
             $business->users()->attach(auth()->id());
@@ -144,8 +142,7 @@ class BusinessController extends Controller
                 [
                     'status' => 'error',
                     'message' => $validator->errors()->all()
-                ]
-                ,
+                ],
                 400
             );
         }
@@ -167,7 +164,6 @@ class BusinessController extends Controller
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
                 $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
-
             }
             $business->save();
             $business->users()->attach(auth()->id());
@@ -217,8 +213,7 @@ class BusinessController extends Controller
                 [
                     'status' => 'error',
                     'message' => $validator->errors()->all()
-                ]
-                ,
+                ],
                 400
             );
         }
@@ -294,7 +289,6 @@ class BusinessController extends Controller
                 ],
                 200
             );
-
         } catch (Exception $e) {
             return response()->json(
                 [
@@ -328,9 +322,7 @@ class BusinessController extends Controller
                 ],
                 200
             );
-
-        } catch
-        (Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
@@ -363,9 +355,7 @@ class BusinessController extends Controller
                 ],
                 200
             );
-
-        } catch
-        (Exception $e) {
+        } catch (Exception $e) {
             return response()->json(
                 [
                     'status' => 'error',
@@ -454,26 +444,22 @@ class BusinessController extends Controller
                 404
             );
         }
-
     }
 
     public function unpublishByStripe($user)
     {
         try {
-            $businessesIds = $user->businesses->where('is_active',1)->pluck('id');
-            if($businessesIds->isNotEmpty())
-            {
-                Business::whereIn('id',$businessesIds)->update(['is_active' => 0]);
+            $businessesIds = $user->businesses->where('is_active', 1)->pluck('id');
+            if ($businessesIds->isNotEmpty()) {
+                Business::whereIn('id', $businessesIds)->update(['is_active' => 0]);
                 StampCard::whereIn('business_id', $businessesIds)->update(['is_active' => 0]);
-            }      
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }
-
     }
     private function SaveLogo($logo)
     {
         Storage::disk('public')->put('business/images/logo/', $logo);
-
     }
 }
