@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BusinessController extends Controller
 {
@@ -97,6 +100,18 @@ class BusinessController extends Controller
 
             }
             $business->save();
+
+            try{
+                $this->generateQr($business->id);
+                $business->qr_path = asset('storage/business/images/qr/' . 'businessId=' . $business->id . '.png');
+                $business->flyer_path = $this->generateFlyer($business->id);
+                $business->save();
+            }catch (Exception $e){
+                throw new Exception($e);
+            }
+
+
+
             $business->users()->attach(auth()->id());
             return response()->json(
                 [
@@ -376,6 +391,45 @@ class BusinessController extends Controller
         }
     }
 
+    public function getBusinessByIdAsVisitor($id){
+        try {
+
+            $business = Business::where('id', $id)
+            ->with('segment:id,name')
+            ->with(['stamp_cards' => function ($query) {
+                $query->where('is_active', 1);
+            }])
+            ->first();
+
+            if (!$business) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Resource not found']
+                    ],
+                    404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => $business
+                ],
+                200
+            );
+
+        } catch
+        (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
+        }
+    }
+
     public function publishBusiness($id)
     {
         try {
@@ -466,7 +520,7 @@ class BusinessController extends Controller
             {
                 Business::whereIn('id',$businessesIds)->update(['is_active' => 0]);
                 StampCard::whereIn('business_id', $businessesIds)->update(['is_active' => 0]);
-            }      
+            }
         } catch (Exception $e) {
             return $e->getMessage();
         }
@@ -477,4 +531,38 @@ class BusinessController extends Controller
         Storage::disk('public')->put('business/images/logo/', $logo);
 
     }
+
+    private function generateQr($businessId)
+    {
+        $baseUrl = env('FRONT_URL').'/visitante/negocios/'.$businessId;
+        $qrCode = QrCode::format('png')
+            ->size(200)
+            ->errorCorrection('H')
+            ->generate($baseUrl);
+
+        Storage::disk('public')->put('business/images/qr/' . 'businessId=' . $businessId . '.png', $qrCode);
+    }
+
+    private function generateFlyer($businessId)
+    {
+        $manager = new ImageManager(Driver::class);
+        $business = Business::find($businessId);
+
+        $templatePath = public_path('storage/templates/flyer.jpg');
+        $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+
+        $template = $manager->read($templatePath);
+        $qr = $manager->read($qrPath);
+        $qr->resize(550, 550);
+
+        $template->place($qr, 'center', 0, -180);
+
+        $template->save(public_path('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png'));
+
+        $flyerPath = asset('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png');
+
+        return $flyerPath;
+
+    }
 }
+

@@ -39,7 +39,7 @@ class SubscriptionController extends Controller
                 'success_url' => $YOUR_DOMAIN . '/visitante/planes/gracias',
                 'cancel_url' => $YOUR_DOMAIN . '/',
                 'allow_promotion_codes' => true,
-            ]); 
+            ]);
         }
         else
         {
@@ -52,7 +52,7 @@ class SubscriptionController extends Controller
                     ]
                 ],
                 'mode' => 'subscription',
-                'success_url' => $YOUR_DOMAIN . '/visitante/planes/gracias',
+                'success_url' => $YOUR_DOMAIN . '/empresa/planes/gracias',
                 'cancel_url' => $YOUR_DOMAIN . '/',
                 'allow_promotion_codes' => true,
                 'subscription_data' => [
@@ -62,7 +62,7 @@ class SubscriptionController extends Controller
                 'payment_method_collection' => 'if_required'
             ]);
         }
-       
+
         $response = response()->json($checkout_session->url);
         $response->header('content-type', 'aplication/json');
         return response()->json([
