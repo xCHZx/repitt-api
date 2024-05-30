@@ -88,7 +88,7 @@ class BusinessController extends Controller
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
             if (!$request->logo_file) {
-                $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
+                $business->logo_path = asset('assets/placeholders/logo-placeholder.png');
                 //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
             } else {
                 $file = $request->file('logo_file');
@@ -547,7 +547,7 @@ class BusinessController extends Controller
         $manager = new ImageManager(Driver::class);
         $business = Business::find($businessId);
 
-        $templatePath = public_path('storage/templates/flyer.jpg');
+        $templatePath = resource_path('images/templates/flyer.jpg');
         $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
 
         $template = $manager->read($templatePath);
