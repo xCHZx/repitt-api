@@ -80,9 +80,6 @@ class BusinessController extends Controller
         }
 
         try {
-
-            // return($request->logo_file);
-
             $business = new Business();
             $business->name = $request->name;
             $business->description = $request->description;
@@ -97,13 +94,11 @@ class BusinessController extends Controller
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
                 $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
-
             }
             $business->save();
 
             try{
-                $this->generateQr($business->id);
-                $business->qr_path = asset('storage/business/images/qr/' . 'businessId=' . $business->id . '.png');
+                $business->qr_path = $this->generateQr($business->id);
                 $business->flyer_path = $this->generateFlyer($business->id);
                 $business->save();
             }catch (Exception $e){
@@ -541,6 +536,10 @@ class BusinessController extends Controller
             ->generate($baseUrl);
 
         Storage::disk('public')->put('business/images/qr/' . 'businessId=' . $businessId . '.png', $qrCode);
+
+        $qrPath = asset('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+
+        return $qrPath;
     }
 
     private function generateFlyer($businessId)
