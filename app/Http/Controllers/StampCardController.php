@@ -67,10 +67,15 @@ class StampCardController extends Controller
             $stampCard->name = $request->name;
             $stampCard->description = $request->description;
             $stampCard->start_date = $request->start_date;
-            $stampCard->end_date = $request->end_date;
-            // $stampCard->stamp_icon_path = $request->stamp_icon_path;
             // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
+
+            if ($request->end_date < $request->start_date) {
+                throw new Exception("La fecha de fin no puede ser menor a la fecha de inicio", 1);
+            } else {
+                $stampCard->end_date = $request->end_date;
+            }
+
             $stampCard->reward = $request->reward;
             if ($request->required_stamps >= 3 && $request->required_stamps <= 20) {
                 $stampCard->required_stamps = $request->required_stamps;
@@ -98,7 +103,13 @@ class StampCardController extends Controller
                 201
             );
         } catch (Exception $e) {
-            return $e;
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                400
+            );
         }
 
     }
