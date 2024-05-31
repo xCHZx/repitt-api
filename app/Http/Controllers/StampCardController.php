@@ -10,6 +10,23 @@ use Illuminate\Support\Facades\Validator;
 
 class StampCardController extends Controller
 {
+    protected $messages = [
+        'name.required' => 'El campo Nombre es requerido',
+        'name.string'  => 'El campo Nombre debe contener texto',
+        'description.required' => 'El campo Descripcion es requerido',
+        'description.string' => 'El campo Descripcion debe contener texto',
+        'required_stamps.required' => 'El campo de Visitas requeridas es requerido',
+        'required_stamps.integer' => 'El campo de Visitas requeridas debe contener un numero',
+        'start_date.required' => 'El campo de fecha de inicio es requerido',
+        'start_date.date' => 'El campo de fecha de inicio debe contener una fecha',
+        'end_date.required' => 'El campo de Fecha de fin es requerido',
+        'end_date.date' => 'El campo de Fecha de fin debe contener una fecha',
+        'business_id.required' => 'El campo de business_id es requerido',
+        'business_id.integer' => 'El campo de business_id debe ser un numero',
+        'reward.required' => 'El campo de Recompensa es requerido',
+        'reward.string' => 'El campo de Recompensa debe contener texto'
+
+    ];
     public function createStampCardAsCompany(Request $request)
     {
         //Verificar si el usuario tiene el rol Owner
@@ -34,7 +51,7 @@ class StampCardController extends Controller
             'reward' => 'required|string'
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -104,7 +121,7 @@ class StampCardController extends Controller
             // 'reward' => 'required|string'
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules,$this->messages);
 
         if ($validator->fails()) {
             return response()->json(
@@ -476,18 +493,18 @@ class StampCardController extends Controller
             if ($activeStamps->isNotEmpty()) {
                 //si tiene verificar que no haya pasado del limite o este en el limite
                 if ($userStampsLimit <= count($activeStamps)) {
-                    throw new Exception("No puedes publicar mas stamps", 1);
+                    throw new Exception("No puedes activar mas tarjetas", 1);
                 }
             } else {
                 //si no tiene cards activas verificar que su limite no sea 0
                 if ($userStampsLimit == 0) {
-                    throw new Exception("No puedes publicar stamps", 1);
+                    throw new Exception("No puedes activar tarjetas", 1);
                 }
             }
             // encontrar stamp y validar que pertence a un negocio activo
             $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
             if (!$stampCard->business->is_active) {
-                throw new Exception("No puedes publicar esta stamp, publica el negocio al que pertenece antes", 1);
+                throw new Exception("No puedes activar esta tarjeta, publica el negocio al que pertenece antes", 1);
 
             }
             //publicar stampcard
@@ -496,7 +513,7 @@ class StampCardController extends Controller
             return response()->json(
                 [
                     'status' => 'success',
-                    'message' => ['Stampcard publicada con exito']
+                    'message' => ['Tarjeta publicada con exito']
                 ],
                 200
             );
@@ -527,14 +544,14 @@ class StampCardController extends Controller
             $businessesIds = auth()->user()->businesses->pluck('id');
             $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
             if (!$stampCard) {
-                throw new Exception("no se encontro la stampcard requerida",1);
+                throw new Exception("no se encontro la Tarjeta requerida",1);
             }
             // desactivar el stamp
             $stampCard->is_active = 0;
             $stampCard->save();
             return response()->json([
                 'status' => 'success',
-                'message' => ['la stampcard ya no se encuentra publica']
+                'message' => ['la Tarjeta ya no se encuentra activa']
             ],200);
         } catch (Exception $e) {
             return response()->json(
