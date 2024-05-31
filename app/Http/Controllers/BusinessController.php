@@ -17,6 +17,13 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BusinessController extends Controller
 {
+    protected $messages = [
+        'name.required' => 'El campo Nombre es requerido',
+        'name.max' => 'El campo Nombre debe tener maximo 100 caracteres',
+        'name.string' => 'El nombre debe ser texto',
+        'segment_id.required' => 'El id del segmento es requerido',
+        'segment_id.integer' => 'El id del segmento debe ser de tipo numero'
+    ];
     public function getAllByCurrentUser()
     {
         try {
@@ -67,7 +74,7 @@ class BusinessController extends Controller
             //'logo_string' => 'required|base64_image_size:500',
             'segment_id' => 'required|integer',
         ];
-        $validator = Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -144,9 +151,9 @@ class BusinessController extends Controller
         $rules = [
             'name' => 'required|string|max:100',
             //'logo_string' => 'required|base64_image_size:500',
-            'segment' => 'required|integer',
+            'segment_id' => 'required|integer',
         ];
-        $validator = Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -172,7 +179,7 @@ class BusinessController extends Controller
             $business->address = $request->address;
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
-            $business->segment_id = $request->segment;
+            $business->segment_id = $request->segment_id;
             if ($request->logo_file) {
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
