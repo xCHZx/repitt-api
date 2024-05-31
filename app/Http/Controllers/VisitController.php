@@ -107,7 +107,7 @@ class VisitController extends Controller
                     ], 201
                 );
             }else{
-                if ($this->isPast12Hours($visits)){
+                if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
 
                     // $user = User::find($request->user_id);
                     $user = User::where('repitt_code', $request->user_repitt_code)->first();
@@ -140,7 +140,7 @@ class VisitController extends Controller
                     return response()->json(
                         [
                             'status' => 'error',
-                            'message' => ['You can only visit once every 12 hours']
+                            'message' => ['Solo puede visitar una vez cada '.$stampCard->required_hours.' horas']
                         ], 400
                     );
                 }
@@ -275,9 +275,6 @@ class VisitController extends Controller
             //Add the user information for each visit
             $business->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
 
-            //Add the stamp card information for each visit
-
-
             //Add the visits count for the business
             $business->visits_count = $business->visits->count();
 
@@ -300,7 +297,7 @@ class VisitController extends Controller
         }
     }
 
-    private function isPast12Hours($visits){
+    private function isPastRequiredHours($visits, $requiredHours){
         $now = Carbon::now();
         $lastVisit = $visits->last();
         $diffMins = $now->diffInMinutes($lastVisit->created_at);
@@ -308,7 +305,7 @@ class VisitController extends Controller
 
         $diffHours = abs($diffHours);
 
-        if ($diffHours >= 12 ){
+        if ($diffHours >= $requiredHours ){
             return true;
         }
         return false;

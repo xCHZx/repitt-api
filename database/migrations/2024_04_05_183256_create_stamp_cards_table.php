@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('description');
             $table->integer('required_stamps');
+            $table->integer('required_hours');
             $table->date('start_date');
             $table->date('end_date');
             $table->string('stamp_icon_path')->nullable();

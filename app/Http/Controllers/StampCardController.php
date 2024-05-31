@@ -46,6 +46,7 @@ class StampCardController extends Controller
             'required_stamps' => 'required|integer',
             'start_date' => 'required|date',
             'end_date' => 'required|date',
+            'required_hours' => 'required|integer',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
             'reward' => 'required|string'
@@ -69,6 +70,12 @@ class StampCardController extends Controller
             $stampCard->start_date = $request->start_date;
             // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
+
+            if ($request->required_hours >= 1 && $request->required_hours <= 12) {
+                $stampCard->required_hours = $request->required_hours;
+            } else {
+                throw new Exception("Las horas requeridas deben estar entre 1 y 12", 1);
+            }
 
             if ($request->end_date < $request->start_date) {
                 throw new Exception("La fecha de fin no puede ser menor a la fecha de inicio", 1);
