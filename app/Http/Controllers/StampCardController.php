@@ -49,13 +49,18 @@ class StampCardController extends Controller
             $stampCard = new StampCard();
             $stampCard->name = $request->name;
             $stampCard->description = $request->description;
-            $stampCard->required_stamps = $request->required_stamps;
             $stampCard->start_date = $request->start_date;
             $stampCard->end_date = $request->end_date;
             // $stampCard->stamp_icon_path = $request->stamp_icon_path;
             // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
             $stampCard->reward = $request->reward;
+            if ($request->required_stamps >= 3 && $request->required_stamps <= 20) {
+                $stampCard->required_stamps = $request->required_stamps;
+            } else {
+                throw new Exception("Las visitas requeridas deben estar entre 3 y 20", 1);
+            }
+            $stampCard->required_stamps = $request->required_stamps;
             if (!$request->stamp_icon_file) {
                 $stampCard->stamp_icon_path = asset('assets/placeholders/icon-placeholder.png');
             } else {
