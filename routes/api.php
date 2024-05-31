@@ -75,11 +75,6 @@ Route::prefix('company')->group(function () {
 //Visitor Profiles Routes
 Route::prefix('visitor')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
-        //Negocios
-        Route::prefix('business')->group(function () {
-            // Route::get('/visited/logged-in', [BusinessController::class, 'getVisitedByCurrentVisitor'])->name('business.getVisitedByCurrentVisitor');
-        });
-
         //Tarjetas de sellos
         Route::prefix('stampcard')->group(function () {
             Route::get('/logged-user', [StampCardController::class, 'getAllStampCardsByCurrentVisitor'])->name('stampcard.getAllStampCardsByCurrentVisitor');
@@ -93,6 +88,12 @@ Route::prefix('visitor')->group(function () {
         Route::prefix('user')->group(function () {
             Route::get('/logged-user', [UserController::class, 'getCurrentVisitorData'])->name('user.getCurrentVisitorData');
         });
+    });
+
+    //Without auth
+    Route::prefix('business')->group(function () {
+        // Route::get('/visited/logged-in', [BusinessController::class, 'getVisitedByCurrentVisitor'])->name('business.getVisitedByCurrentVisitor');
+        Route::get('/{id}', [BusinessController::class, 'getBusinessByIdAsVisitor'])->name('business.getBusinessByIdAsVisitor');
     });
 });
 

@@ -483,7 +483,9 @@ class MetricController extends Controller
             'December' => 'Diciembre'
         ];
 
-        $mostVisitedMonth->month = $spanishMonths[$mostVisitedMonth->month];
+        if ($mostVisitedMonth) {
+            $mostVisitedMonth->month = $spanishMonths[$mostVisitedMonth->month];
+        }
 
         return $mostVisitedMonth;
     }

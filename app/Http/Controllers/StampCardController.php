@@ -57,7 +57,7 @@ class StampCardController extends Controller
             $stampCard->business_id = $request->business_id;
             $stampCard->reward = $request->reward;
             if (!$request->stamp_icon_file) {
-                $stampCard->stamp_icon_path = asset('storage/placeholders/icon-placeholder.png');
+                $stampCard->stamp_icon_path = asset('assets/placeholders/icon-placeholder.png');
             } else {
                 $file = $request->file('stamp_icon_file');
                 $this->saveIcon($file);

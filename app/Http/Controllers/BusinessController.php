@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class BusinessController extends Controller
 {
@@ -76,9 +79,6 @@ class BusinessController extends Controller
         }
 
         try {
-
-            // return($request->logo_file);
-
             $business = new Business();
             $business->name = $request->name;
             $business->description = $request->description;
@@ -87,85 +87,24 @@ class BusinessController extends Controller
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
             if (!$request->logo_file) {
-                $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
-                //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
+                $business->logo_path = asset('assets/placeholders/logo-placeholder.png');
             } else {
                 $file = $request->file('logo_file');
                 $this->SaveLogo($file);
                 $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
             }
             $business->save();
-            $business->users()->attach(auth()->id());
-            return response()->json(
-                [
-                    'status' => 'success',
-                    'message' => 'Business creation successful',
-                    'data' => [
-                        $business,
-                    ]
-                ],
-                200
-            );
-        } catch (Exception $e) {
-            return response()->json(
-                [
-                    'status' => 'error',
-                    'message' => [$e->getMessage()]
-                ],
-                404
-            );
-        }
-    }
 
-    public function storeFromLogin($request, $userId)
-    {
-        // Validate if the user is an owner
-        $user = User::find($userId);
-        if (!$user->hasRole('Owner')) {
-            return response()->json(
-                [
-                    'status' => 'error',
-                    'message' => ['Unauthorized']
-                ],
-                401
-            );
-        }
-
-        $rules = [
-            'name' => 'required|string|max:100',
-            //'logo_string' => 'required|base64_image_size:500',
-            'segment_id' => 'required|integer',
-        ];
-        $validator = Validator::make($request, $rules);
-        if ($validator->fails()) {
-            return response()->json(
-                [
-                    'status' => 'error',
-                    'message' => $validator->errors()->all()
-                ],
-                400
-            );
-        }
-        try {
-
-            // return($request->logo_file);
-
-            $business = new Business();
-            $business->name = $request["name"];
-            $business->description = $request["description"];
-            $business->address = $request["address"];
-            $business->phone = $request["phone"];
-            $business->opening_hours = $request["opening_hours"];
-            $business->segment_id = $request["segment"];
-            if (!$request->logo_file) {
-                $business->logo_path = asset('storage/placeholders/logo-placeholder.png');
-                //$logo_path = resource_path('../resources/placeholders/logo-placeholders.png');
-            } else {
-                $file = $request->file('logo_file');
-                $this->SaveLogo($file);
-                $business->logo_path = asset('storage/business/images/logo/' . $file->hashName());
+            try{
+                $business->qr_path = $this->generateQr($business->id);
+                $business->flyer_path = $this->generateFlyer($business->id);
+                $business->save();
+            }catch (Exception $e){
+                throw new Exception($e);
             }
-            $business->save();
+
+
+
             $business->users()->attach(auth()->id());
             return response()->json(
                 [
@@ -366,6 +305,45 @@ class BusinessController extends Controller
         }
     }
 
+    public function getBusinessByIdAsVisitor($id){
+        try {
+
+            $business = Business::where('id', $id)
+            ->with('segment:id,name')
+            ->with(['stamp_cards' => function ($query) {
+                $query->where('is_active', 1);
+            }])
+            ->first();
+
+            if (!$business) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Resource not found']
+                    ],
+                    404
+                );
+            }
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'data' => $business
+                ],
+                200
+            );
+
+        } catch
+        (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                404
+            );
+        }
+    }
+
     public function publishBusiness($id)
     {
         try {
@@ -464,16 +442,41 @@ class BusinessController extends Controller
         Storage::disk('public')->put('business/images/logo/', $logo);
     }
 
+
     private function generateQr($businessId)
     {
-        // hashear el businessId antes de pasarlo a la variable del link
-        $link = env('FRONT_URL').'/visitante/negocios/'.$businessId;
+        $baseUrl = env('FRONT_URL').'/visitante/negocios/'.$businessId;
         $qrCode = QrCode::format('png')
             ->size(200)
             ->errorCorrection('H')
-            ->generate($link);
+            ->generate($baseUrl);
 
-        Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $businessId . '.png', $qrCode);
+        Storage::disk('public')->put('business/images/qr/' . 'businessId=' . $businessId . '.png', $qrCode);
+
+        $qrPath = asset('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+
+        return $qrPath;
+    }
+
+    private function generateFlyer($businessId)
+    {
+        $manager = new ImageManager(Driver::class);
+        $business = Business::find($businessId);
+
+        $templatePath = resource_path('images/templates/flyer.jpg');
+        $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+
+        $template = $manager->read($templatePath);
+        $qr = $manager->read($qrPath);
+        $qr->resize(550, 550);
+
+        $template->place($qr, 'center', 0, -180);
+
+        $template->save(public_path('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png'));
+
+        $flyerPath = asset('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png');
+
+        return $flyerPath;
 
     }
 }

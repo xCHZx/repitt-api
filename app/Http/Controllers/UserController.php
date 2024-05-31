@@ -31,7 +31,7 @@ class UserController extends Controller
             $repittCode = $this->generateRepittCode();
         }
         $user->repitt_code = $repittCode;
-        $user->qr_path = asset('storage/business/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');
+        $user->qr_path = asset('storage/users/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');
 
         switch ($request->role) {
             case 'company':
@@ -192,7 +192,7 @@ class UserController extends Controller
             ->errorCorrection('H')
             ->generate($repittCode);
 
-        Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
+        Storage::disk('public')->put('users/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
 
     }
     // private function saveqrPath($repittCode,$userId)

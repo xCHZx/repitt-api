@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('hashed_id')->nullable();
             $table->string('logo_path')->nullable();
             $table->string('qr_path')->nullable();
+            $table->string('flyer_path')->nullable();
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable();
         });
