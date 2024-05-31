@@ -16,6 +16,30 @@ use Laravel\Sanctum\HasApiTokens;
 
 class AuthController extends Controller
 {
+    // este array son los mensajes de error para los diferentes campos de el validator
+    protected $messages = [
+        'first_name.required' => 'El campo de Nombres es requerido',
+        'last_name.required' => 'El campo de Apellidos es requerido',
+        'first_name.string' => 'El campo Nombres debe ser texto',
+        'last_name.string' => 'El campo Apellidos debe ser texto',
+        'first_name.max' => 'El campo Nombres debe ser maximo 100 caracteres',
+        'last_name.max' => 'El campo Apellidos debe ser maximo de 100 caracteres',
+        'phone.required' => 'El campo de Numero es requerido',
+        'phone.max' => 'El campo Numero debe ser maximo de 20 caracteres',
+        'phone.unique' => 'El numero que proporcionaste ya esta en uso',
+        'phone.string' => 'El campo Numero debe ser texto',
+        'email.required' => 'El campo correo es requerido',
+        'email.string' => 'El campo correo debe ser texto',
+        'email.unique' => 'El correo que proporcionaste ya esta en uso',
+        'password.required' => 'El campo de Contraseña es requerido',
+        'password.string' => 'El campo Contraseña debe ser texto',
+        'password.min' => 'La contraseña debe contener minimo 8 caracteres',
+        'role.required' => 'El campo de Rol es requerido',
+        'verification_code.required' => 'El codigo de verificacion es requerido',
+        'token.required' => 'El campo de Token es requerido',
+        'token.string' => 'El token debe ser texto'
+
+    ];
     public function register(Request $request)
     {
         $rules = [
@@ -27,7 +51,7 @@ class AuthController extends Controller
             // 'account_status' => 'required',
             'role' => 'required' //Falta validar que acepte un enum de 2 opciones o con un IF, checar validation rules de laravel
         ];
-        $validator = Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -70,7 +94,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:100',
             'password' => 'required|string'
         ];
-        $validator = Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -180,7 +204,7 @@ class AuthController extends Controller
         $rules = [
             'verification_code' => 'required',
         ];
-        $validator = Validator::make($request->input(), $rules);
+        $validator = Validator::make($request->input(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -237,7 +261,7 @@ class AuthController extends Controller
         $rules = [
             'email' => 'required'
         ];
-        $validation = Validator::make($request->input(), $rules);
+        $validation = Validator::make($request->input(), $rules,$this->messages);
         if ($validation->fails()) {
             return response()->json(
                 [
@@ -286,7 +310,7 @@ class AuthController extends Controller
             'token' => 'required|string',
             'password' => 'required|string'
         ];
-        $validation = Validator::make($request->input(), $rules);
+        $validation = Validator::make($request->input(), $rules,$this->messages);
         if ($validation->fails()) {
             return response()->json(
                 [
@@ -305,7 +329,7 @@ class AuthController extends Controller
             }
 
             $user = User::find($userId);
-            if (Hash::check($request->password,$user->password)) {
+            if (Hash::check($request->password, $user->password)) {
                 throw new Exception("your new password must be diferent to your old password", 1);
 
             }
@@ -313,10 +337,10 @@ class AuthController extends Controller
             // $user->has_verified_email = 1;
             // $user->email_verified_at = Carbon::now();
             $user->save();
-            Cache::forget('userToken:'.$token);
+            Cache::forget('userToken:' . $token);
 
             // notificar al usuario por correo de que se ha cambiado su contraseña
-            app(EmailController::class)->notifyPasswordChange($user->name,$user->email);
+            app(EmailController::class)->notifyPasswordChange($user->name, $user->email);
 
             return response()->json(
                 [
@@ -330,7 +354,8 @@ class AuthController extends Controller
                 [
                     'status' => 'error',
                     'message' => [$e->getMessage()]
-                ],403
+                ],
+                403
             );
         }
 

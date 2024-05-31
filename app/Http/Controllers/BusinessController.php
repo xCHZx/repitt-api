@@ -463,4 +463,17 @@ class BusinessController extends Controller
     {
         Storage::disk('public')->put('business/images/logo/', $logo);
     }
+
+    private function generateQr($businessId)
+    {
+        // hashear el businessId antes de pasarlo a la variable del link
+        $link = env('FRONT_URL').'/visitante/negocios/'.$businessId;
+        $qrCode = QrCode::format('png')
+            ->size(200)
+            ->errorCorrection('H')
+            ->generate($link);
+
+        Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $businessId . '.png', $qrCode);
+
+    }
 }
