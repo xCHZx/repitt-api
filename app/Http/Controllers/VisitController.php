@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Validator;
 
 class VisitController extends Controller
 {
+    protected $messages = [
+        'stamp_card_id.required' => 'El campo de stamp_card_id es requerido',
+        'stamp_card_id.integer' => 'El campo de stamp_card_id debe contener un numero entero',
+        'user_reppitt_code.required' => 'El repitt code del usuario es requerido',
+        'user_repitt_code.string' => 'El reppit code del usuario debe ser texto'
+    ];
     public function registerVisitAsCompany(Request $request)
     {
         $rules = [
@@ -20,7 +26,7 @@ class VisitController extends Controller
             'user_repitt_code' => 'required|string',
         ];
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), $rules,$this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [

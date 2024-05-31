@@ -16,6 +16,12 @@ use Laravel\Cashier\Subscription;
 
 class UserController extends Controller
 {
+    protected $messages = [
+        'activePassword.required' => 'El campo de contraseña actual es requerido',
+        'activePassword.string' => 'El campo de contraseña actual debe contener texto',
+        'newPassword.require' => 'El campo de contraseña nueva es requerido',
+        'newPassword.string' => 'El campo de contraseña nueva debe contener texto'
+    ];
     public function store($request)
     {
         $user = new User();
@@ -100,7 +106,7 @@ class UserController extends Controller
             // contraseña actual del usuario
             'newPassword' => 'required|string' // contraseña que el usuario quiere usar
         ];
-        $validation = validator::make($request->input(), $rules);
+        $validation = validator::make($request->input(), $rules,$this->messages);
         if ($validation->fails()) {
             return response()->json(
                 [
