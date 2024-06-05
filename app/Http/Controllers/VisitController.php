@@ -39,7 +39,6 @@ class VisitController extends Controller
         try{
             $userBusinessesIds = auth()->user()->businesses->where('is_active',1)->pluck('id')->toArray();
 
-            // $user = User::find($request->user_id);
             $user = User::where('repitt_code', $request->user_repitt_code)->first();
 
             if (!$user){
@@ -51,21 +50,18 @@ class VisitController extends Controller
                 );
             }
 
-            //get the user's visits for the stamp card
-            $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
-
-
-
+            //Check if the stampCard exists
             $stampCard = StampCard::find($request->stamp_card_id);
             if(!$stampCard->is_active)
             {
                 return response()->json(
                     [
                         'status' => 'error',
-                        'message' => ['Esta tarjeta no esta activa']
+                        'message' => ['Esta tarjeta no esta activa o no existe']
                     ], 400
                 );
             }
+
             //Check if the stampCard business is the same as the user's business
             if (!in_array($stampCard->business_id, $userBusinessesIds)) {
                 return response()->json(
@@ -76,13 +72,14 @@ class VisitController extends Controller
                 );
             }
 
+
+
+            //get the user's visits for the stamp card
+            $visits = $user->visits->where('visitable_id', $request->stamp_card_id)->where('visitable_type', 'App\Models\StampCard');
+
             if (!$visits or $visits->isEmpty()){
 
-                // $user = User::find($request->user_id);
                 $user = User::where('repitt_code', $request->user_repitt_code)->first();
-                $visit = new Visit();
-                $visit->user()->associate($user);
-                $stampCard->visits()->save($visit);
 
                 // Retrieve the StampCard instance associated with the user
                 $userStampCard = $user->stamp_cards()->where('stamp_card_id', $request->stamp_card_id)->first();
@@ -92,28 +89,50 @@ class VisitController extends Controller
                     // It's the first visit, create a user_stamp_card
                     $user->stamp_cards()->attach($request->stamp_card_id, ['visits_count' => 1, 'is_active' => true, 'is_reward_redeemed' => false]);
                 } else {
+
+                    //Check if stampCard required visits is reached
+                    if ($userStampCard->pivot->visits_count >= $stampCard->required_stamps){
+                        return response()->json(
+                            [
+                                'status' => 'error',
+                                'message' => ['No se pueden registrar visitas. El usuario ya ha completado las visitas requeridas'],
+                                'data' => [
+                                    'visit count' => $userStampCard->pivot->visits_count,
+                                    'required visits' => $stampCard->required_stamps
+                                ]
+                            ], 400
+                        );
+                    }
+
                     // It's not the first visit, increment the visitsCount
                     $userStampCard->pivot->visits_count += 1;
+                    //Check if this visit is the last one, if so, set the user_stamp_card is_completed to true
+                    if ($userStampCard->pivot->visits_count == $stampCard->required_stamps){
+                        $userStampCard->pivot->is_completed = true;
+                        $userStampCard->pivot->completed_at = Carbon::now();
+                    }
                     $userStampCard->pivot->save();
                 }
+
+                //Create a visit
+                $visit = new Visit();
+                $visit->user()->associate($user);
+                $stampCard->visits()->save($visit);
 
                 return response()->json(
                     [
                         'status' => 'success',
                         'data' => [
                             'visit' => $visit,
-                            'user_stamp_card' => $userStampCard,
                         ]
                     ], 201
                 );
             }else{
-                if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
+                // if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
+                if (1 == 1){
 
                     // $user = User::find($request->user_id);
                     $user = User::where('repitt_code', $request->user_repitt_code)->first();
-                    $visit = new Visit();
-                    $visit->user()->associate($user);
-                    $stampCard->visits()->save($visit);
 
                     // Retrieve the StampCard instance associated with the user
                     $userStampCard = $user->stamp_cards()->where('stamp_card_id', $request->stamp_card_id)->first();
@@ -123,16 +142,39 @@ class VisitController extends Controller
                         // It's the first visit, create a user_stamp_card
                         $user->stamp_cards()->attach($request->stamp_card_id, ['visits_count' => 1, 'is_active' => true, 'is_reward_redeemed' => false]);
                     } else {
-                        // It's not the first visit, increment the visitsCount
-                        $userStampCard->pivot->visits_count += 1;
-                        $userStampCard->pivot->save();
+
+                        //Check if stampCard required visits is reached
+                        if ($userStampCard->pivot->visits_count >= $stampCard->required_stamps){
+                            return response()->json(
+                                [
+                                    'status' => 'error',
+                                    'message' => ['No se pueden registrar visitas. El usuario ya ha completado las visitas requeridas'],
+                                    'data' => [
+                                        'visit count' => $userStampCard->pivot->visits_count,
+                                        'required visits' => $stampCard->required_stamps
+                                    ]
+                                ], 400
+                        );
+                        }
+
+                    // It's not the first visit, increment the visitsCount
+                    $userStampCard->pivot->visits_count += 1;
+                    //Check if this visit is the last one, if so, set the user_stamp_card is_completed to true
+                    if ($userStampCard->pivot->visits_count == $stampCard->required_stamps){
+                        $userStampCard->pivot->is_completed = true;
+                        $userStampCard->pivot->completed_at = Carbon::now();
                     }
+                    $userStampCard->pivot->save();
+                    }
+                    //Create a visit
+                    $visit = new Visit();
+                    $visit->user()->associate($user);
+                    $stampCard->visits()->save($visit);
                     return response()->json(
                         [
                             'status' => 'success',
                             'data' => [
                                 'visit' => $visit,
-                                'user_stamp_card' => $userStampCard,
                             ]
                         ], 201
                     );
@@ -147,6 +189,7 @@ class VisitController extends Controller
             }
 
         }catch(Exception $e){
+            return $e;
             return response()->json(
                 [
                     'status' => 'error',
