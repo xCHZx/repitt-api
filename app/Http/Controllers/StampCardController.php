@@ -664,6 +664,62 @@ class StampCardController extends Controller
 
     }
 
+    public function redeemReward(Request $request){
+        try {
+
+            $rules = [
+                'user_stamp_card_id' => 'required|integer'
+            ];
+
+            $validator = Validator::make($request->all(), $rules,$this->messages);
+            if ($validator->fails()) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => $validator->errors()->all()
+                    ],
+                    400
+                );
+            }
+
+            $userStampCardId = $request->user_stamp_card_id;
+
+            $userStampCard = UserStampCard::find($userStampCardId);
+            if (!$userStampCard) {
+                throw new Exception("Resource not found", 1);
+            }
+
+            if ($userStampCard->is_completed == 0) {
+                throw new Exception("StampCard not completed", 1);
+            }
+
+            if ($userStampCard->is_reward_redeemed) {
+                throw new Exception("Reward already redeemed", 1);
+            }
+            $userStampCard->is_reward_redeemed = 1;
+            $userStampCard->save();
+            return response()->json(
+                [
+                    'status' => 'success',
+                    'message' => ['Reward redeemed successfully'],
+                    'data' => [
+                        $userStampCard
+                    ]
+                ],
+                200
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ],
+                403
+            );
+        }
+
+    }
+
     private function saveIcon($stamp_icon)
     {
         Storage::disk('public')->put('business/images/icons/', $stamp_icon);

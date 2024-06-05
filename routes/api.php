@@ -56,6 +56,7 @@ Route::prefix('company')->group(function () {
             Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllStampCardsByBusinessIdAsCurrentCompany');
             Route::get('/business/{id}/active/logged-user', [StampCardController::class, 'getAllActiveStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllActiveStampCardsByBusinessIdAsCurrentCompany');
             Route::get('/{id}/logged-user', [StampCardController::class, 'getStampCardByIdAsCurrentCompany'])->name('stampcard.getStampCardByIdAsCurrentCompany');
+            Route::post('/redeem', [StampCardController::class, 'redeemReward'])->name('stampcard.redeemReward');
         });
 
         //Visitas

@@ -128,8 +128,8 @@ class VisitController extends Controller
                     ], 201
                 );
             }else{
-                // if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
-                if (1 == 1){
+                if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
+                // if (1 == 1){
 
                     // $user = User::find($request->user_id);
                     $user = User::where('repitt_code', $request->user_repitt_code)->first();
