@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Carbon\Carbon;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote')->hourly();
+// Artisan::command('inspire', function () {
+//     $this->comment(Inspiring::quote());
+// })->purpose('Display an inspiring quote')->hourly();
 // desctivar las cards que ya hayan expirado
 Schedule::call(function (){
     DB::table('stamp_cards')->where('end_date','<=',Carbon::now())
