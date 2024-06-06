@@ -408,62 +408,13 @@ class StampCardController extends Controller
         }
     }
 
-    public function getStampCardByIdAsVisitor($stampCardId) //Used
+    public function getStampCardByIdAsVisitor($userStampCardId) //Used
     {
         try {
-            // $userId = auth()->user()->id;
-            // $stampCard = StampCard::whereHas('visits', function ($query) use ($userId) {
-            //     $query->where('user_id', $userId);
-            // })->with([
-            //         'business' => function ($query) {
-            //             $query->select('id', 'name', 'logo_path', 'segment_id');
-            //         },
-            //         'business.segment'
-            //     ])->with([
-            //         'visits' => function ($query) use ($userId) {
-            //             $query->where('user_id', $userId);
-            //         }
-            //     ])->withCount([
-            //         'visits' => function ($query) use ($userId) {
-            //             $query->where('user_id', $userId);
-            //         }
-            //     ])
-            //     ->with([
-            //         'users' => function ($query) use ($userId) {
-            //             $query->where('user_id', $userId);
-            //         }
-            //     ])
-            //     ->find($stampCardId);
-
-            // if (!$stampCard) {
-            //     return response()->json(
-            //         [
-            //             'status' => 'error',
-            //             'message' => ['Resource not found']
-            //         ],
-            //         404
-            //     );
-            // }
-
-            // $userStampCard = $stampCard->users->first()->pivot;
-
-            // // Add user_stamp_card to the stampCard object
-            // $stampCard->user_stamp_card = $userStampCard;
-
-            // return response()->json(
-            //     [
-            //         'status' => 'success',
-            //         'data' => [
-            //             $stampCard
-            //         ]
-            //     ],
-            //     200
-            // );
 
             $userId = auth()->user()->id;
 
-            $stampCard = UserStampCard::where('user_id', $userId)
-                ->where('stamp_card_id', $stampCardId)
+            $stampCard = UserStampCard::where('id', $userStampCardId)
                 ->with([
                     'stamp_card' => function ($query) {
                         $query->with([
@@ -478,7 +429,18 @@ class StampCardController extends Controller
                             }
                         ]);
                     }
-                ])->first();
+                ])
+                ->first();
+
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'data' => [
+                            $stampCard
+                        ]
+                    ],
+                    200
+                );
 
             if (!$stampCard) {
                 return response()->json(
