@@ -25,7 +25,9 @@ class StampCardController extends Controller
         'business_id.required' => 'El campo de business_id es requerido',
         'business_id.integer' => 'El campo de business_id debe ser un numero',
         'reward.required' => 'El campo de Recompensa es requerido',
-        'reward.string' => 'El campo de Recompensa debe contener texto'
+        'reward.string' => 'El campo de Recompensa debe contener texto',
+        'allowed_repeats.required' => 'El campo de Repeticiones permitidas es requerido',
+        'allowed_repeats.integer' => 'El campo de Repeticiones permitidas debe contener un numero',
 
     ];
     public function createStampCardAsCompany(Request $request)
@@ -50,7 +52,8 @@ class StampCardController extends Controller
             'required_hours' => 'required|integer',
             // 'primary_color' => 'required|string',
             'business_id' => 'required|integer',
-            'reward' => 'required|string'
+            'reward' => 'required|string',
+            'allowed_repeats' => 'required|integer',
         ];
 
         $validator = Validator::make($request->all(), $rules,$this->messages);
@@ -71,6 +74,12 @@ class StampCardController extends Controller
             $stampCard->start_date = $request->start_date;
             // $stampCard->primary_color = $request->primary_color;
             $stampCard->business_id = $request->business_id;
+
+            if ($request->allowed_repeats >= 1 && $request->allowed_repeats <= 10) {
+                $stampCard->allowed_repeats = $request->allowed_repeats;
+            } else {
+                throw new Exception("Las repeticiones permitidas deben estar entre 1 y 10", 1);
+            }
 
             if ($request->required_hours >= 1 && $request->required_hours <= 12) {
                 $stampCard->required_hours = $request->required_hours;
@@ -697,6 +706,7 @@ class StampCardController extends Controller
                 throw new Exception("Reward already redeemed", 1);
             }
             $userStampCard->is_reward_redeemed = 1;
+            $userStampCard->is_active = 0;
             $userStampCard->save();
             return response()->json(
                 [

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserStampCard extends Model
 {
@@ -23,6 +24,11 @@ class UserStampCard extends Model
     public function stamp_card(): BelongsTo
     {
         return $this->belongsTo(StampCard::class);
+    }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(Visit::class);
     }
 
 

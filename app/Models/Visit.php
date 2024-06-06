@@ -36,6 +36,11 @@ class Visit extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function user_stamp_card(): BelongsTo
+    {
+        return $this->belongsTo(UserStampCard::class);
+    }
+
     public function stamp_card(): BelongsTo
     {
         return $this->belongsTo(StampCard::class, 'visitable_id');
