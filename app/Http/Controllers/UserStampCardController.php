@@ -156,7 +156,8 @@ class UserStampCardController extends Controller
 
             $stampCardIds = auth()->user()->stamp_cards->pluck('id');
 
-            if(!$userStampCard || !in_array($userStampCard->stamp_card_id, $stampCardIds->toArray())){
+            // if(!$userStampCard || !in_array($userStampCard->stamp_card_id, $stampCardIds->toArray())){
+            if(!$userStampCard ){
                 return response()->json(
                     [
                         'status' => 'error',
