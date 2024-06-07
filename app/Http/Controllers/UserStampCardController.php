@@ -82,7 +82,8 @@ class UserStampCardController extends Controller
                 ])
                 ->with([
                     'visits' => function ($query) {
-                        $query->where('user_id', auth()->user()->id);
+                        $query->where('user_id', auth()->user()->id)
+                            ->orderBy('created_at', 'desc');
                     }
                 ])
                 ->first();
@@ -139,11 +140,6 @@ class UserStampCardController extends Controller
                                         },
                                         'business.segment'
                                     ]);
-                                    // ->with([
-                                    //     'visits' => function ($query) {
-                                    //         $query->where('user_id', auth()->user()->id);
-                                    //     }
-                                    // ]);
                                 }
                             ])
                             ->with([

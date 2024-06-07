@@ -284,13 +284,15 @@ class VisitController extends Controller
                 );
             }
 
-            $stampCard->visits;
 
-            //Add the business relation to the stampCard
-            $stampCard->load('business:id,name,logo_path');
-
-            // Load the user information for each visit
-            $stampCard->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
+            $stampCard->load([
+                'visits' => function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                },
+                'visits.user:id,first_name,last_name,repitt_code',
+                'visits.stamp_card:id,name',
+                'business:id,name,logo_path'
+            ]);
 
             // Add visits count
             $stampCard->visits_count = $stampCard->visits->count();
@@ -336,14 +338,24 @@ class VisitController extends Controller
                 );
             }
 
-            //Add all the visits for the business
-            $business->load('visits');
+            // //Add all the visits for the business
+            // $business->load('visits');
 
-            //Add the user information for each visit
-            $business->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
+            // //Add the user information for each visit
+            // $business->load('visits.user:id,first_name,last_name,repitt_code', 'visits.stamp_card:id,name');
 
             //Add the visits count for the business
             $business->visits_count = $business->visits->count();
+
+            $business->load([
+                'visits' => function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                },
+                'visits.user:id,first_name,last_name,repitt_code',
+                'visits.stamp_card:id,name',
+            ]);
+
+
 
             return response()->json(
                 [
