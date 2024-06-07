@@ -10,6 +10,7 @@ use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VisitController;
 use App\Http\Controllers\SegmentController;
+use App\Http\Controllers\UserStampCardController;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Route;
@@ -56,7 +57,13 @@ Route::prefix('company')->group(function () {
             Route::get('/business/{id}/logged-user', [StampCardController::class, 'getAllStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllStampCardsByBusinessIdAsCurrentCompany');
             Route::get('/business/{id}/active/logged-user', [StampCardController::class, 'getAllActiveStampCardsByBusinessIdAsCurrentCompany'])->name('stampcard.getAllActiveStampCardsByBusinessIdAsCurrentCompany');
             Route::get('/{id}/logged-user', [StampCardController::class, 'getStampCardByIdAsCurrentCompany'])->name('stampcard.getStampCardByIdAsCurrentCompany');
-            Route::post('/redeem', [StampCardController::class, 'redeemReward'])->name('stampcard.redeemReward');
+        });
+
+        //Tarjetas de sellos de usuario
+        Route::prefix('user-stampcard')->group(function () {
+            Route::get('/{id}/logged-user', [UserStampCardController::class, 'getUserStampCardByIdAsCurrentCompany'])->name('userstampcard.getUserStampCardByIdAsCurrentCompany');
+            Route::post('/redeem', [UserStampCardController::class, 'redeemReward'])->name('stampcard.redeemReward');
+
         });
 
         //Visitas
@@ -76,16 +83,18 @@ Route::prefix('company')->group(function () {
 //Visitor Profiles Routes
 Route::prefix('visitor')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
-        //Tarjetas de sellos
-        Route::prefix('stampcard')->group(function () {
-            Route::get('/logged-user', [StampCardController::class, 'getAllStampCardsByCurrentVisitor'])->name('stampcard.getAllStampCardsByCurrentVisitor');
-            Route::get('/{id}', [StampCardController::class, 'getStampCardByIdAsVisitor'])->name('business.getStampCardByIdAsVisitor');
+        //Tarjetas de sellos de usuario
+        Route::prefix('user-stampcard')->group(function () {
+            Route::get('/logged-user', [UserStampCardController::class, 'getAllUserStampCardsByCurrentVisitor'])->name('userstampcard.getAllUserStampCardsByCurrentVisitor');
+            Route::get('/{id}', [UserStampCardController::class, 'getUserStampCardByIdAsVisitor'])->name('userstampcard.getUserStampCardByIdAsVisitor');
         });
 
+        //Visitas
         Route::prefix('visit')->group(function () {
-        Route::get('/logged-user', [VisitController::class, 'getAllVisitsAsCurrentVisitor'])->name('visit.getAllVisitsAsCurrentVisitor');
+            Route::get('/logged-user', [VisitController::class, 'getAllVisitsAsCurrentVisitor'])->name('visit.getAllVisitsAsCurrentVisitor');
         });
 
+        //Usuario
         Route::prefix('user')->group(function () {
             Route::get('/logged-user', [UserController::class, 'getCurrentVisitorData'])->name('user.getCurrentVisitorData');
         });

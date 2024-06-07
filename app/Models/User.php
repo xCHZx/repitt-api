@@ -86,4 +86,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(AccountDetails::class,'user_id');
     }
+
+    public function user_stamp_cards(): HasMany
+    {
+        return $this->hasMany(UserStampCard::class);
+    }
 }

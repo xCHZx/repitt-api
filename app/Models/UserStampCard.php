@@ -31,5 +31,10 @@ class UserStampCard extends Model
         return $this->hasMany(Visit::class);
     }
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
 
 }
