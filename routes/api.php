@@ -63,6 +63,7 @@ Route::prefix('company')->group(function () {
         Route::prefix('user-stampcard')->group(function () {
             Route::get('/{id}/logged-user', [UserStampCardController::class, 'getUserStampCardByIdAsCurrentCompany'])->name('userstampcard.getUserStampCardByIdAsCurrentCompany');
             Route::post('/redeem', [UserStampCardController::class, 'redeemReward'])->name('stampcard.redeemReward');
+            Route::post('/waiting-redeem', [UserStampCardController::class, 'getAllUserStampCardsWaitingReedeemAsCompany'])->name('userstampcard.getAllUserStampCardsWaitingReedeemAsCompany');
 
         });
 
