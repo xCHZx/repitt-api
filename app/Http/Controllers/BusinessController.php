@@ -74,7 +74,7 @@ class BusinessController extends Controller
             //'logo_string' => 'required|base64_image_size:500',
             'segment_id' => 'required|integer',
         ];
-        $validator = Validator::make($request->input(), $rules,$this->messages);
+        $validator = Validator::make($request->input(), $rules, $this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -93,6 +93,12 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
+            $repittCode = generateRepittCode(6);
+
+            while (Business::where('business_repitt_code', $repittCode)->exists()) {
+                $repittCode = generateRepittCode(6);
+            }
+            $business->business_repitt_code = $repittCode;
             if (!$request->logo_file) {
                 $business->logo_path = asset('assets/placeholders/logo-placeholder.png');
             } else {
@@ -102,11 +108,11 @@ class BusinessController extends Controller
             }
             $business->save();
 
-            try{
-                $business->qr_path = $this->generateQr($business->id);
-                $business->flyer_path = $this->generateFlyer($business->id);
+            try {
+                $business->qr_path = $this->generateQr($business->business_repitt_code);
+                $business->flyer_path = $this->generateFlyer($business->business_repitt_code); 
                 $business->save();
-            }catch (Exception $e){
+            } catch (Exception $e) {
                 throw new Exception($e);
             }
 
@@ -153,7 +159,7 @@ class BusinessController extends Controller
             //'logo_string' => 'required|base64_image_size:500',
             'segment_id' => 'required|integer',
         ];
-        $validator = Validator::make($request->input(), $rules,$this->messages);
+        $validator = Validator::make($request->input(), $rules, $this->messages);
         if ($validator->fails()) {
             return response()->json(
                 [
@@ -312,15 +318,18 @@ class BusinessController extends Controller
         }
     }
 
-    public function getBusinessByIdAsVisitor($id){
+    public function getBusinessByIdAsVisitor($id)
+    {
         try {
 
             $business = Business::where('id', $id)
-            ->with('segment:id,name')
-            ->with(['stamp_cards' => function ($query) {
-                $query->where('is_active', 1);
-            }])
-            ->first();
+                ->with('segment:id,name')
+                ->with([
+                    'stamp_cards' => function ($query) {
+                        $query->where('is_active', 1);
+                    }
+                ])
+                ->first();
 
             if (!$business) {
                 return response()->json(
@@ -450,28 +459,28 @@ class BusinessController extends Controller
     }
 
 
-    private function generateQr($businessId)
+    private function generateQr($repittCode)
     {
-        $baseUrl = env('FRONT_URL').'/visitante/negocios/'.$businessId;
+        $baseUrl = env('FRONT_URL') . '/visitante/negocios/' . $repittCode;
         $qrCode = QrCode::format('png')
             ->size(200)
             ->errorCorrection('H')
             ->generate($baseUrl);
 
-        Storage::disk('public')->put('business/images/qr/' . 'businessId=' . $businessId . '.png', $qrCode);
+        Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
 
-        $qrPath = asset('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+        $qrPath = asset('storage/business/images/qr/' . 'repittcode=' . $repittCode . '.png');
 
         return $qrPath;
     }
 
-    private function generateFlyer($businessId)
+    private function generateFlyer($repittCode)
     {
         $manager = new ImageManager(Driver::class);
-        $business = Business::find($businessId);
+        $business = Business::find($repittCode);
 
         $templatePath = resource_path('images/templates/flyer.jpg');
-        $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $businessId . '.png');
+        $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $repittCode . '.png');
 
         $template = $manager->read($templatePath);
         $qr = $manager->read($qrPath);
@@ -479,9 +488,9 @@ class BusinessController extends Controller
 
         $template->place($qr, 'center', 0, -180);
 
-        $template->save(public_path('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png'));
+        $template->save(public_path('storage/business/images/flyer/' . 'businessId=' . $repittCode . '.png'));
 
-        $flyerPath = asset('storage/business/images/flyer/' . 'businessId=' . $businessId . '.png');
+        $flyerPath = asset('storage/business/images/flyer/' . 'businessId=' . $repittCode . '.png');
 
         return $flyerPath;
 

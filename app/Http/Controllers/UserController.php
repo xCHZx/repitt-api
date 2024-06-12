@@ -31,10 +31,10 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->account_status_id = 1; //Falta definir diferentes estados de cuenta
         $user->password = hash::make($request->password);
-        $repittCode = $this->generateRepittCode();
+        $repittCode = generateRepittCode(9);
 
         while (User::where('repitt_code', $repittCode)->exists()) {
-            $repittCode = $this->generateRepittCode();
+            $repittCode = generateRepittCode(9);
         }
         $user->repitt_code = $repittCode;
         $user->qr_path = asset('storage/users/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');
@@ -179,6 +179,8 @@ class UserController extends Controller
         }
     }
 
+    /*
+
     private function generateRepittCode()
     {
         $alphabet = 'abcdefghijklmnopqrstuvwxyz';
@@ -190,7 +192,7 @@ class UserController extends Controller
         $repittCode = implode('-', str_split($repittCode, 3));
         return $repittCode;
     }
-
+    */
     private function generateQr($repittCode)
     {
         $qrCode = QrCode::format('png')
