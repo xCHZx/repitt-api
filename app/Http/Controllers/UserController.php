@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Cashier\Subscription;
+use App\Helpers\DataGeneration;
 
 
 class UserController extends Controller
@@ -31,10 +32,10 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->account_status_id = 1; //Falta definir diferentes estados de cuenta
         $user->password = hash::make($request->password);
-        $repittCode = generateRepittCode(9);
+        $repittCode = app(DataGeneration::class)->generateRepittCode(9);
 
         while (User::where('repitt_code', $repittCode)->exists()) {
-            $repittCode = generateRepittCode(9);
+            $repittCode = app(DataGeneration::class)->generateRepittCode(9);
         }
         $user->repitt_code = $repittCode;
         $user->qr_path = asset('storage/users/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');

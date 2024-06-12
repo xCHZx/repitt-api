@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Business;
+use App\Helpers\DataGeneration;
 use App\Models\Segment;
 use App\Models\StampCard;
 use App\Models\User;
@@ -93,10 +94,10 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
-            $repittCode = generateRepittCode(6);
+            $repittCode = app(DataGeneration::class)->generateRepittCode(6);
 
             while (Business::where('business_repitt_code', $repittCode)->exists()) {
-                $repittCode = generateRepittCode(6);
+                $repittCode = app(DataGeneration::class)->generateRepittCode(6);
             }
             $business->business_repitt_code = $repittCode;
             if (!$request->logo_file) {
