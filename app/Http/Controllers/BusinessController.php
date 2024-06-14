@@ -110,7 +110,7 @@ class BusinessController extends Controller
             $business->save();
 
             try {
-                $business->qr_path = $this->generateQr($business->business_repitt_code);
+                $business->qr_path = $this->generateQr($business->business_repitt_code,$business->id);
                 $business->flyer_path = $this->generateFlyer($business->business_repitt_code); 
                 $business->save();
             } catch (Exception $e) {
@@ -460,7 +460,7 @@ class BusinessController extends Controller
     }
 
 
-    private function generateQr($repittCode)
+    private function generateQr($repittCode,$businessId)
     {
         $baseUrl = env('FRONT_URL') . '/visitante/negocios/' . $repittCode;
         $qrCode = QrCode::format('png')
