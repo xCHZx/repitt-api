@@ -4,17 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Business;
 use App\Helpers\DataGeneration;
-use App\Models\Segment;
 use App\Models\StampCard;
-use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Helpers\FilesGeneration;
+
 
 class BusinessController extends Controller
 {
@@ -110,7 +109,7 @@ class BusinessController extends Controller
             $business->save();
 
             try {
-                $business->qr_path = $this->generateQr($business->business_repitt_code,$business->id);
+                $business->qr_path = app(FilesGeneration::class)->generateQr($repittCode,'business');
                 $business->flyer_path = $this->generateFlyer($business->business_repitt_code); 
                 $business->save();
             } catch (Exception $e) {
@@ -460,20 +459,7 @@ class BusinessController extends Controller
     }
 
 
-    private function generateQr($repittCode,$businessId)
-    {
-        $baseUrl = env('FRONT_URL') . '/visitante/negocios/' . $repittCode;
-        $qrCode = QrCode::format('png')
-            ->size(200)
-            ->errorCorrection('H')
-            ->generate($baseUrl);
-
-        Storage::disk('public')->put('business/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
-
-        $qrPath = asset('storage/business/images/qr/' . 'repittcode=' . $repittCode . '.png');
-
-        return $qrPath;
-    }
+    
 
     private function generateFlyer($repittCode)
     {
@@ -481,7 +467,7 @@ class BusinessController extends Controller
         $business = Business::find($repittCode);
 
         $templatePath = resource_path('images/templates/flyer.jpg');
-        $qrPath = public_path('storage/business/images/qr/' . 'businessId=' . $repittCode . '.png');
+        $qrPath = public_path('storage/business/images/qr/' . 'repittCode=' . $repittCode . '.png');
 
         $template = $manager->read($templatePath);
         $qr = $manager->read($qrPath);
@@ -489,9 +475,9 @@ class BusinessController extends Controller
 
         $template->place($qr, 'center', 0, -180);
 
-        $template->save(public_path('storage/business/images/flyer/' . 'businessId=' . $repittCode . '.png'));
+        $template->save(public_path('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png'));
 
-        $flyerPath = asset('storage/business/images/flyer/' . 'businessId=' . $repittCode . '.png');
+        $flyerPath = asset('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png');
 
         return $flyerPath;
 

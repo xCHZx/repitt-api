@@ -13,6 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Cashier\Subscription;
 use App\Helpers\DataGeneration;
+use App\Helpers\FilesGeneration;
+
 
 
 class UserController extends Controller
@@ -38,7 +40,7 @@ class UserController extends Controller
             $repittCode = app(DataGeneration::class)->generateRepittCode(9);
         }
         $user->repitt_code = $repittCode;
-        $user->qr_path = asset('storage/users/images/qr/' . 'repittcode=' . $user->repitt_code . '.png');
+        $user->qr_path = app(FilesGeneration::class)->generateQr($repittCode,'user');
 
         switch ($request->role) {
             case 'company':
@@ -60,7 +62,7 @@ class UserController extends Controller
         );
         // $user->save();
 
-        $this->generateQr($repittCode);
+        //$this->generateQr($repittCode);
         $this->storeAccountDetails($user->id);
 
 
@@ -194,16 +196,7 @@ class UserController extends Controller
         return $repittCode;
     }
     */
-    private function generateQr($repittCode)
-    {
-        $qrCode = QrCode::format('png')
-            ->size(200)
-            ->errorCorrection('H')
-            ->generate($repittCode);
-
-        Storage::disk('public')->put('users/images/qr/' . 'repittcode=' . $repittCode . '.png', $qrCode);
-
-    }
+    
     // private function saveqrPath($repittCode,$userId)
 // {
 //     $this->generateQr($repittCode,$userId);

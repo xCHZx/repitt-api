@@ -32,12 +32,16 @@ class DataGeneration
                 while (Business::where('business_repitt_code', $repittCode)->exists()) {
                     $repittCode = app(DataGeneration::class)->generateRepittCode(6);
                 }
-                $business->update(['business_repit_code' => $repittCode]);
+                //$business->update(['business_repit_code' => $repittCode]);
+                $business->business_repitt_code = $repittCode;
+                $business->save();
+                echo "Business updated succesfully".$business->id."\n";
             }
-            echo "Businesses updated succesfully";
+            echo "All Businessesess updated succesfully";
 
         } catch (Exception $e) {
             echo $e->getMessage();
         }
     }
+
 }
