@@ -4,7 +4,9 @@ namespace App\Helpers;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+
 
 
 class FilesGeneration
@@ -22,5 +24,25 @@ class FilesGeneration
         $qrPath = asset('storage/'.$model.'/images/qr/' . 'repittCode=' . $repittCode . '.png');
 
         return $qrPath;
+    }
+
+    public function generateFlyer($repittCode)
+    {
+        
+        $manager = new ImageManager(Driver::class);
+        $templatePath = resource_path('images/templates/flyer.jpg');
+        $qrPath = public_path('storage/business/images/qr/' . 'repittCode=' . $repittCode . '.png');
+
+        $template = $manager->read($templatePath);
+        $qr = $manager->read($qrPath);
+        $qr->resize(550, 550);
+
+        $template->place($qr, 'center', 0, -180);
+
+        $template->save(public_path('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png'));
+
+        $flyerPath = asset('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png');
+
+        return $flyerPath;
     }
 }

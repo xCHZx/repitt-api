@@ -110,7 +110,7 @@ class BusinessController extends Controller
 
             try {
                 $business->qr_path = app(FilesGeneration::class)->generateQr($repittCode,'business');
-                $business->flyer_path = $this->generateFlyer($business->business_repitt_code); 
+                $business->flyer_path = app(FilesGeneration::class)->generateFlyer($repittCode);
                 $business->save();
             } catch (Exception $e) {
                 throw new Exception($e);
@@ -458,28 +458,4 @@ class BusinessController extends Controller
         Storage::disk('public')->put('business/images/logo/', $logo);
     }
 
-
-    
-
-    private function generateFlyer($repittCode)
-    {
-        $manager = new ImageManager(Driver::class);
-        $business = Business::find($repittCode);
-
-        $templatePath = resource_path('images/templates/flyer.jpg');
-        $qrPath = public_path('storage/business/images/qr/' . 'repittCode=' . $repittCode . '.png');
-
-        $template = $manager->read($templatePath);
-        $qr = $manager->read($qrPath);
-        $qr->resize(550, 550);
-
-        $template->place($qr, 'center', 0, -180);
-
-        $template->save(public_path('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png'));
-
-        $flyerPath = asset('storage/business/images/flyer/' . 'repittCode=' . $repittCode . '.png');
-
-        return $flyerPath;
-
-    }
 }

@@ -24,10 +24,26 @@ class DataValidation
             $businesses = Business::all();
             foreach ($businesses as $business) {
                 $business->update(
-                    ['qr_path' => app(FilesGeneration::class)->generateQr($business->business_repitt_code)]
+                    ['qr_path' => app(FilesGeneration::class)->generateQr($business->business_repitt_code,'business')]
                 );
             }
             echo "Business QR updated sucessfully";
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function changeBusinessFlyerByTinker()
+    {
+        try {
+            $businesses = Business::all();
+            foreach ($businesses as $business)
+            {
+                $business->update(
+                    ['flyer_path' => app(FilesGeneration::class)->generateFlyer($business->business_repitt_code)]);
+                echo 'Business '.$business->id.' updated succesfully';
+            }
+            echo 'All businesses updated succesfully';
         } catch (Exception $e) {
             echo $e->getMessage();
         }
