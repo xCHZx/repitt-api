@@ -24,13 +24,13 @@ if (env('APP_ENV') == 'local') {
 if (env('APP_ENV') == 'staging') {
     Schedule::call(function(){
         $dataValidation = new DataValidation;
-        $dataValidation->changeBusinessessQrByTinker();
+        $dataValidation->DeactivateStampCards();
     })->everyMinute();
 }
 
 if (env('APP_ENV') == 'production') {
     Schedule::call(function(){
         $dataValidation = new DataValidation;
-        $dataValidation->changeBusinessFlyerByTinker();
+        $dataValidation->DeactivateStampCards();
     })->daily();
 }
