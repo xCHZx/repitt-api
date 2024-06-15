@@ -23,7 +23,7 @@ class FilesGeneration
         $filePath = $model.'/images/qr/' . 'repittCode=' . $repittCode . '.png';
         Storage::disk('public')->put($filePath, $qrCode);
         $qrPath = Storage::disk('public')->url($filePath);
-        echo $qrPath;
+        // echo $qrPath;
 
         return $qrPath;
     }

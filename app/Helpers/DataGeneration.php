@@ -35,7 +35,7 @@ class DataGeneration
                 //$business->update(['business_repit_code' => $repittCode]);
                 $business->business_repitt_code = $repittCode;
                 $business->save();
-                echo 'Business '.$business->id.' updated sucessfully';
+                // echo 'Business '.$business->id.' updated sucessfully';
             }
             echo "All Businessesess updated succesfully";
 
