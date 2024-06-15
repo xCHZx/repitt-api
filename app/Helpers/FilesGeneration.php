@@ -20,15 +20,16 @@ class FilesGeneration
         }
 
         $qrCode = Http::get("http://api.qrserver.com/v1/create-qr-code/?data=".$content. "&size=200x200&margin=15&format=png");
-        Storage::disk('public')->put($model.'/images/qr/' . 'repittCode=' . $repittCode . '.png', $qrCode);
-        $qrPath = asset('storage/'.$model.'/images/qr/' . 'repittCode=' . $repittCode . '.png');
+        $filePath = $model.'/images/qr/' . 'repittCode=' . $repittCode . '.png';
+        Storage::disk('public')->put($filePath, $qrCode);
+        $qrPath = Storage::disk('public')->url($filePath);
 
         return $qrPath;
     }
 
     public function generateFlyer($repittCode)
     {
-        
+
         $manager = new ImageManager(Driver::class);
         $templatePath = resource_path('images/templates/flyer.jpg');
         $qrPath = public_path('storage/business/images/qr/' . 'repittCode=' . $repittCode . '.png');
