@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StampCard;
 use App\Models\UserStampCard;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -419,10 +420,15 @@ class StampCardController extends Controller
                 }
             }
             // encontrar stamp y validar que pertence a un negocio activo
+            $today = Carbon::now();
             $stampCard = StampCard::whereIn('business_id', $businessesIds)->find($id);
             if (!$stampCard->business->is_active) {
                 throw new Exception("No puedes activar esta tarjeta, publica el negocio al que pertenece antes", 1);
 
+            }
+            elseif($stampCard->end_date <= $today)
+            {
+                throw new Exception("No puedes activar esta tarjeta porque ya caduco", 1);
             }
             //publicar stampcard
             $stampCard->is_active = 1;
