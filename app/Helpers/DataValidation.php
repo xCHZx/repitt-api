@@ -44,6 +44,7 @@ class DataValidation
                 // $business->update(
                 //     ['flyer_path' => app(FilesGeneration::class)->generateFlyer($business->business_repitt_code)]);
                 $business->flyer_path = app(FilesGeneration::class)->generateFlyer($business->business_repitt_code);
+                $business->save();
                 echo 'Business '.$business->id.' updated succesfully';
             }
             echo 'All businesses updated succesfully';
