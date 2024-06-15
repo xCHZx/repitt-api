@@ -11,7 +11,7 @@ class DataValidation
 {
     public function DeactivateStampCards()
     {
-        
+
         StampCard::where('is_active','=',1)
                  ->where('end_date','<=',Carbon::now())
                  ->update(['is_active' => 0]);
@@ -23,9 +23,11 @@ class DataValidation
         try {
             $businesses = Business::all();
             foreach ($businesses as $business) {
-                $business->update(
-                    ['qr_path' => app(FilesGeneration::class)->generateQr($business->business_repitt_code,'business')]
-                );
+                // $business->update(
+                //     ['qr_path' => app(FilesGeneration::class)->generateQr($business->business_repitt_code,'business')]
+                // );
+                $business->qr_path = app(FilesGeneration::class)->generateQr($business->business_repitt_code,'business');
+                $business->save();
             }
             echo "Business QR updated sucessfully";
         } catch (Exception $e) {
@@ -39,8 +41,9 @@ class DataValidation
             $businesses = Business::all();
             foreach ($businesses as $business)
             {
-                $business->update(
-                    ['flyer_path' => app(FilesGeneration::class)->generateFlyer($business->business_repitt_code)]);
+                // $business->update(
+                //     ['flyer_path' => app(FilesGeneration::class)->generateFlyer($business->business_repitt_code)]);
+                $business->flyer_path = app(FilesGeneration::class)->generateFlyer($business->business_repitt_code);
                 echo 'Business '.$business->id.' updated succesfully';
             }
             echo 'All businesses updated succesfully';
