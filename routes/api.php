@@ -104,7 +104,7 @@ Route::prefix('visitor')->group(function () {
     //Without auth
     Route::prefix('business')->group(function () {
         // Route::get('/visited/logged-in', [BusinessController::class, 'getVisitedByCurrentVisitor'])->name('business.getVisitedByCurrentVisitor');
-        Route::get('/{id}', [BusinessController::class, 'getBusinessByIdAsVisitor'])->name('business.getBusinessByIdAsVisitor');
+        Route::get('/{repittCode}', [BusinessController::class, 'getBusinessByRepittCodeAsVisitor'])->name('business.getBusinessByRepittCodeAsVisitor');
     });
 });
 

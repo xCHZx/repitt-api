@@ -34,10 +34,10 @@ class UserController extends Controller
         $user->email = $request->email;
         $user->account_status_id = 1; //Falta definir diferentes estados de cuenta
         $user->password = hash::make($request->password);
-        $repittCode = app(DataGeneration::class)->generateRepittCode(9);
+        $repittCode = app(DataGeneration::class)->generateRepittCode(9, 3);
 
         while (User::where('repitt_code', $repittCode)->exists()) {
-            $repittCode = app(DataGeneration::class)->generateRepittCode(9);
+            $repittCode = app(DataGeneration::class)->generateRepittCode(9, 3);
         }
         $user->repitt_code = $repittCode;
         $user->qr_path = app(FilesGeneration::class)->generateQr($repittCode,'user');
@@ -181,31 +181,6 @@ class UserController extends Controller
             );
         }
     }
-
-    /*
-
-    private function generateRepittCode()
-    {
-        $alphabet = 'abcdefghijklmnopqrstuvwxyz';
-        $randomIndex = rand(0, strlen($alphabet) - 1);
-        $randomCharacter = $alphabet[$randomIndex];
-
-        $repittCode = Str::random(9);
-        $repittCode = strtolower(preg_replace('/[^a-zA-Z]/', $randomCharacter, $repittCode));
-        $repittCode = implode('-', str_split($repittCode, 3));
-        return $repittCode;
-    }
-    */
-    
-    // private function saveqrPath($repittCode,$userId)
-// {
-//     $this->generateQr($repittCode,$userId);
-
-    //     $user = User::find($userId);
-//     $user->qr_path = asset('storage/business/images/qr/'.$userId.'.png');
-//     $user->save();
-
-    // }
 
     public function getUserByStripeId($stripeId)
     {

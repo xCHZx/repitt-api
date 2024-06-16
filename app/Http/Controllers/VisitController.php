@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use App\Helpers\DataGeneration;
+use App\Helpers\FilesGeneration;
 
 class VisitController extends Controller
 {
@@ -77,13 +79,17 @@ class VisitController extends Controller
             if (!$visits or $visits->isEmpty()){
 
                  // It's the first visit, create a UserStampCard
-                $userStampCard = new UserStampCard([
-                    'user_id' => $user->id,
-                    'stamp_card_id' => $request->stamp_card_id,
-                    'visits_count' => 1,
-                    'is_active' => true,
-                    'is_reward_redeemed' => false,
-                ]);
+                $repittCode = app(DataGeneration::class)->generateRepittCode(12, 4);
+                $userStampCard = new UserStampCard();
+                $userStampCard->user_id = $user->id;
+                $userStampCard->stamp_card_id = $request->stamp_card_id;
+                $userStampCard->visits_count = 1;
+                $userStampCard->is_active = true;
+                $userStampCard->is_reward_redeemed = false;
+                $userStampCard->userstampcard_repitt_code = $repittCode;
+                $userStampCard->save();
+
+                $userStampCard->qr_path = app(FilesGeneration::class)->generateQr($userStampCard->userstampcard_repitt_code,'userstampcard');
                 $userStampCard->save();
 
                 //Create a visit
@@ -104,8 +110,8 @@ class VisitController extends Controller
 
             }else{
                 //If is not the first visit
-                if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
-                // if (1 == 1){
+                // if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){
+                if (1 == 1){
 
                     //Count the UserStampCard instances of te StampCard
                     $userStampCardCount = UserStampCard::where('stamp_card_id', $request->stamp_card_id)
@@ -131,15 +137,19 @@ class VisitController extends Controller
 
                     if(!$userStampCard){
                         //Create a new UserStampCard
-                        $userStampCard = new UserStampCard([
-                            'user_id' => $user->id,
-                            'stamp_card_id' => $request->stamp_card_id,
-                            'visits_count' => 1,
-                            'is_active' => true,
-                            'is_reward_redeemed' => false,
-                        ]);
-
+                        $repittCode = app(DataGeneration::class)->generateRepittCode(12, 4);
+                        $userStampCard = new UserStampCard();
+                        $userStampCard->user_id = $user->id;
+                        $userStampCard->stamp_card_id = $request->stamp_card_id;
+                        $userStampCard->visits_count = 0;  //Se crea en cero porque abajo se asigna en el flujo principal
+                        $userStampCard->is_active = true;
+                        $userStampCard->is_reward_redeemed = false;
+                        $userStampCard->userstampcard_repitt_code = $repittCode;
                         $userStampCard->save();
+
+                        $userStampCard->qr_path = app(FilesGeneration::class)->generateQr($userStampCard->userstampcard_repitt_code,'userstampcard');
+                        $userStampCard->save();
+
 
                         //Create a visit
                         $visit = new Visit();
@@ -168,13 +178,19 @@ class VisitController extends Controller
                     if($userStampCard->visits_count >= $userStampCard->stamp_card->required_stamps){
 
                         //Create a new UserStampCard
-                        $userStampCard = new UserStampCard([
-                            'user_id' => $user->id,
-                            'stamp_card_id' => $request->stamp_card_id,
-                            'visits_count' => 1,
-                            'is_active' => true,
-                            'is_reward_redeemed' => false,
-                        ]);
+                        $repittCode = app(DataGeneration::class)->generateRepittCode(12, 4);
+                        $userStampCard = new UserStampCard();
+                        $userStampCard->user_id = $user->id;
+                        $userStampCard->stamp_card_id = $request->stamp_card_id;
+                        $userStampCard->visits_count = 0;  //Se crea en cero porque abajo se asigna en el flujo principal
+                        $userStampCard->is_active = true;
+                        $userStampCard->is_reward_redeemed = false;
+                        $userStampCard->userstampcard_repitt_code = $repittCode;
+
+                        $userStampCard->save();
+
+                        $userStampCard->qr_path = app(FilesGeneration::class)->generateQr($userStampCard->userstampcard_repitt_code,'userstampcard');
+                        $userStampCard->save();
                     }
 
                     //If normal conditions are met, increment the visitsCount

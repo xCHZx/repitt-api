@@ -5,6 +5,7 @@ use App\Models\StampCard;
 use Carbon\Carbon;
 use App\Models\Business;
 use App\Helpers\FilesGeneration;
+use App\Models\UserStampCard;
 use Exception;
 
 class DataValidation
@@ -48,6 +49,23 @@ class DataValidation
                 echo 'Business '.$business->id.' updated succesfully';
             }
             echo 'All businesses updated succesfully';
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function changeUserStampCardQrByTinker()
+    {
+        try {
+            $userStampCards = UserStampCard::all();
+            foreach ($userStampCards as $userStampCard) {
+                // $business->update(
+                //     ['qr_path' => app(FilesGeneration::class)->generateQr($business->business_repitt_code,'business')]
+                // );
+                $userStampCard->qr_path = app(FilesGeneration::class)->generateQr($userStampCard->userstampcard_repitt_code,'userstampcard');
+                $userStampCard->save();
+            }
+            echo "UserStampCards QR updated sucessfully";
         } catch (Exception $e) {
             echo $e->getMessage();
         }

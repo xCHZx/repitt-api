@@ -93,10 +93,10 @@ class BusinessController extends Controller
             $business->phone = $request->phone;
             $business->opening_hours = $request->opening_hours;
             $business->segment_id = $request->segment_id;
-            $repittCode = app(DataGeneration::class)->generateRepittCode(6);
+            $repittCode = app(DataGeneration::class)->generateRepittCode(6, 3);
 
             while (Business::where('business_repitt_code', $repittCode)->exists()) {
-                $repittCode = app(DataGeneration::class)->generateRepittCode(6);
+                $repittCode = app(DataGeneration::class)->generateRepittCode(6, 3);
             }
             $business->business_repitt_code = $repittCode;
             if (!$request->logo_file) {
@@ -318,11 +318,11 @@ class BusinessController extends Controller
         }
     }
 
-    public function getBusinessByIdAsVisitor($id)
+    public function getBusinessByRepittCodeAsVisitor($repittCode)
     {
         try {
 
-            $business = Business::where('id', $id)
+            $business = Business::where('business_repitt_code', $repittCode)
                 ->with('segment:id,name')
                 ->with([
                     'stamp_cards' => function ($query) {
