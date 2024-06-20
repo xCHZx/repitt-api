@@ -70,6 +70,7 @@ Route::prefix('company')->group(function () {
         //Visitas
         Route::prefix('visit')->group(function () {
             Route::post('/', [VisitController::class, 'registerVisitAsCompany'])->name('visit.registerVisitAsCompany');
+            Route::post('user-stampcard/', [VisitController::class, 'registerVisitByUserStampCardAsCompany'])->name('visit.registerVisitByUserStampCardAsCompany');
             Route::get('stampcard/{id}/logged-user', [VisitController::class, 'getAllVisitsByStampCardIdAsCurrentCompany'])->name('visit.getAllVisitsByStampCardIdAsCurrentCompany');
             Route::get('business/{id}/logged-user', [VisitController::class, 'getAllVisitsByBusinessIdAsCurrentCompany'])->name('visit.getAllVisitsByBusinessIdAsCurrentCompany');
         });

@@ -240,6 +240,157 @@ class VisitController extends Controller
     }
 
 
+    public function registerVisitByUserStampCardAsCompany(Request $request)
+    {
+        $rules = [
+            'userstampcard_repitt_code' => 'required|string',
+        ];
+
+        $validator = Validator::make($request->all(), $rules,$this->messages);
+        if ($validator->fails()) {
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => $validator->errors()->all()
+                ], 400
+            );
+        }
+
+        try{
+            $userStampCard = UserStampCard::where('userstampcard_repitt_code', $request->userstampcard_repitt_code)->with('visits')->first();
+            if (!$userStampCard){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['La tarjeta no existe']
+                    ], 400
+                );
+            }
+
+            //Check if the userStampCard is active
+            if (!$userStampCard->is_active){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['La tarjeta no está activa']
+                    ], 400
+                );
+            }
+
+            //Check if the userStampCard is completed
+            if ($userStampCard->is_completed){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Esta tarjeta ya ha sido completada']
+                    ], 400
+                );
+            }
+
+            //Check if the userStampCard is redeemed
+            if ($userStampCard->is_reward_redeemed){
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['La recompensa ya ha sido reclamada']
+                    ], 400
+                );
+            }
+
+            //Check if the userStampCard business is the same as the user's business
+            $userBusinessesIds = auth()->user()->businesses->pluck('id')->toArray();
+            if (!in_array($userStampCard->stamp_card->business_id, $userBusinessesIds)) {
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['El negocio no existe o no se encuentra activo']
+                    ], 400
+                );
+            }
+
+            //Get the user's visits for the stamp card
+            $visits = $userStampCard->visits;
+
+            // if ($this->isPastRequiredHours($visits, $userStampCard->stamp_card->required_hours)){
+                if (1 == 1){
+
+                //Count the UserStampCard instances of te StampCard
+                $userStampCardCount = UserStampCard::where('stamp_card_id', $userStampCard->stamp_card_id)
+                                    ->where('is_active', 0)
+                                    ->count();
+                // $validationStampCard = StampCard::find($userStampCard->stamp_card_id);
+
+                if($userStampCardCount >= $userStampCard->stamp_card->allowed_repeats){
+                    return response()->json(
+                        [
+                            'status' => 'error',
+                            'message' => ['El usuario ya ha completado el limite de tarjetas']
+                        ], 400
+                    );
+                }
+
+                // if($userStampCard->visits_count >= $userStampCard->stamp_card->required_stamps){
+
+                //     //Create a new UserStampCard
+                //     $repittCode = app(DataGeneration::class)->generateRepittCode(12, 4);
+                //     $userStampCard = new UserStampCard();
+                //     $userStampCard->user_id = $userStampCard->user_id;
+                //     $userStampCard->stamp_card_id = $userStampCard->stamp_card_id;
+                //     $userStampCard->visits_count = 0;  //Se crea en cero porque abajo se asigna en el flujo principal
+                //     $userStampCard->is_active = true;
+                //     $userStampCard->is_reward_redeemed = false;
+                //     $userStampCard->userstampcard_repitt_code = $repittCode;
+
+                //     $userStampCard->save();
+
+                //     $userStampCard->qr_path = app(FilesGeneration::class)->generateQr($userStampCard->userstampcard_repitt_code,'userstampcard');
+                //     $userStampCard->save();
+                // }
+
+                //If normal conditions are met, increment the visitsCount
+                $userStampCard->visits_count += 1;
+                //Check if this visit is the last one, if so, set the user_stamp_card is_completed to true
+                if ($userStampCard->visits_count == $userStampCard->stamp_card->required_stamps){
+                    $userStampCard->is_completed = true;
+                    $userStampCard->completed_at = Carbon::now();
+                }
+                $userStampCard->save();
+
+                //Create a visit
+                $visit = new Visit();
+                $visit->user()->associate($userStampCard->user);
+                $visit->user_stamp_card()->associate($userStampCard->id);
+                $userStampCard->stamp_card->visits()->save($visit); //Here sabes the visitable_id and visitable_type
+                $visit->save();
+
+                return response()->json(
+                    [
+                        'status' => 'success',
+                        'data' => [
+                            'visit' => $visit,
+                        ]
+                    ], 201
+                );
+
+            }else{
+                return response()->json(
+                    [
+                        'status' => 'error',
+                        'message' => ['Solo puede visitar una vez cada '.$userStampCard->stamp_card->required_hours.' horas']
+                    ], 400
+                );
+            }
+        }catch(Exception $e){
+            return response()->json(
+                [
+                    'status' => 'error',
+                    'message' => [$e->getMessage()]
+                ], 400
+            );
+        }
+    }
+
+
     public function getAllVisitsAsCurrentVisitor() //used
     {
         try{
