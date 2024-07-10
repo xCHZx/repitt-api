@@ -110,8 +110,8 @@ class VisitController extends Controller
 
             }else{
                 //If is not the first visit
-                // if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){ //*********************************************************
-                if (1 == 1){
+                if ($this->isPastRequiredHours($visits, $stampCard->required_hours)){ //*********************************************************
+                // if (1 == 1){
 
                     //Count the UserStampCard instances of te StampCard
                     $userStampCardCount = UserStampCard::where('stamp_card_id', $request->stamp_card_id)
@@ -316,8 +316,8 @@ class VisitController extends Controller
             //Get the user's visits for the stamp card
             $visits = $userStampCard->visits;
 
-            // if ($this->isPastRequiredHours($visits, $userStampCard->stamp_card->required_hours)){
-                if (1 == 1){
+            if ($this->isPastRequiredHours($visits, $userStampCard->stamp_card->required_hours)){
+                // if (1 == 1){
 
                 //Count the UserStampCard instances of te StampCard
                 $userStampCardCount = UserStampCard::where('stamp_card_id', $userStampCard->stamp_card_id)
